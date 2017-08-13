@@ -8,6 +8,9 @@ import { app, Menu, Tray, nativeImage, shell } from 'electron';
 import IconChart from './iconChart';
 import configStore from './helpers/config';
 import fetch from 'node-fetch';
+import Colors from './colors';
+import jetpack from 'fs-jetpack';
+import AutoLaunch from 'auto-launch';
 
 // Special module holding environment variables which you declared
 // in config/env_xxx.json file.
@@ -21,16 +24,41 @@ if (env.name !== 'production') {
     app.setPath('userData', `${userDataPath} (${env.name})`);
 }
 
-const config = configStore.load();
 var appIcon = null;
+const config = configStore.load();
+const appManifest = jetpack.read('./package.json', 'json');
+const appNameSignature = `${appManifest.productName} v${appManifest.version}`;
 const iconChart = new IconChart();
+
+var appAutoLauncher = new AutoLaunch({
+    name: appNameSignature,
+    path: `/Applications/${capitalize(appManifest.name)}.app`
+});
+
+appAutoLauncher.isEnabled()
+    .then(function (isEnabled) {
+        if (config.startWithOS) {
+            if (!isEnabled) appAutoLauncher.enable();
+        } else {
+            if (isEnabled) appAutoLauncher.disable();
+        }
+
+    })
+    .catch((err) => {
+        console.error(err);
+    });
+
+function capitalize(s) {
+    return s && s[0].toUpperCase() + s.slice(1);
+}
 
 app.on('ready', () => {
     appIcon = new Tray(nativeImage.createFromPath(path.join(__dirname, 'favicon.ico')));
+
     var contextMenu = Menu.buildFromTemplate([
         {
             label: 'Settings',
-            click: function () {
+            click: () => {
                 shell.openItem(configStore.filePath);
             }
         },
