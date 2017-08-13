@@ -1,6 +1,6 @@
 import PImage from 'pureimage';
 import stream from 'stream';
-import { nativeImage } from "electron";
+import { nativeImage } from 'electron';
 
 class IconChart {
     constructor() {
@@ -15,11 +15,11 @@ class IconChart {
         // TODO: Throw exception if there aren't a minimum of 2 arguments
         const smallBarsWidgth = 50 / bars.length;
 
-        // Clear bar    
+        // Clear bar
         this.context.clearRect(0, 0, this.width, this.height);
 
         const isPositive = (value) => (value >= 0);
-        
+
         // Draw the total bar
         var barHeight = (value) => ((this.height / 2) * Math.abs(value)) / percentageLimit.total;
         if (total.value >= 0) {

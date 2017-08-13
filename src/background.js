@@ -57,7 +57,7 @@ app.on('ready', () => {
     }
 
     appIcon = new Tray(nativeImage.createFromPath(path.join(__dirname, 'favicon.ico')));
-    var contextMenu = Menu.buildFromTemplate([       
+    var contextMenu = Menu.buildFromTemplate([
         {
             label: 'Settings',
             click: function () {
@@ -160,7 +160,7 @@ const updateIcon = () => {
             }
 
             iconChart.getFor(config.percentageLimit, subTotal, total, bars, (buffer) => {
-                appIcon.setImage(buffer);                
+                appIcon.setImage(buffer);
                 appIcon.setToolTip('Coinwatch v0.1.0\n' + variableToolTip.substring(0, 127 - 'Cryptowatch v0.1.0\n'.length - fixedToolTip.length) + fixedToolTip);
             })
         })
