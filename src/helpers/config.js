@@ -12,7 +12,7 @@ export default {
     filePath: filePath,
     load: () => {
         if (!fs.existsSync(filePath)) {
-            userDataDir.write(configStoreFile, {}, { atomic: true });
+            userDataDir.write(configStoreFile, jetpack.read('./app/sampleConfig.json', 'json'), { atomic: true });
         }
         return Object.assign({}, userDataDir.read(configStoreFile, 'json'));
     },

@@ -1,0 +1,82 @@
+{
+    "startWithOS": false,
+    "interval": 60,
+    "percentageLimit": {
+        "coin": 10,
+        "subTotal": 10,
+        "total": 20
+    },
+    "market": "Coinbase",
+    "transactions": [
+        {
+            "coin": "BTC",
+            "amount": 0.00416396,
+            "date": "2017-07-12",
+            "price": 2401.56,
+            "fee": 0.99
+        },
+        {
+            "coin": "ETH",
+            "amount": 0.10043148,
+            "date": "2017-07-14",
+            "price": 199.14,
+            "fee": 1.49
+        },
+        {
+            "coin": "BTC",
+            "amount": 0.0741627,
+            "date": "2017-07-25",
+            "price": 2593.35,
+            "fee": 7.67
+        },
+        {
+            "coin": "ETH",
+            "amount": 0.47523152,
+            "date": "2017-07-28",
+            "price": 192.22,
+            "fee": 3.65
+        },
+        {
+            "coin": "ETH",
+            "amount": 0.2569805,
+            "date": "2017-07-30",
+            "price": 198.50,
+            "fee": 2.99
+        },
+        {
+            "coin": "LTC",
+            "amount": 1.0000,
+            "date": "2017-08-07",
+            "price": 46.40,
+            "fee": 1.99
+        },
+        {
+            "coin": "ETH",
+            "amount": 0.2670,
+            "date": "2017-08-07",
+            "price": 271.72,
+            "fee": 2.99
+        },
+        {
+            "coin": "BTC",
+            "amount": 0.03868292,
+            "date": "2017-08-08",
+            "price": 3380.82,
+            "fee": 5.22
+        },
+        {
+            "coin": "ETH",
+            "amount": 1.00016769,
+            "date": "2017-08-11",
+            "price": 316.95,
+            "fee": 4.72
+        },
+        {
+            "coin": "BTC",
+            "amount": 0.07842993,
+            "date": "2017-08-12",
+            "price": 3825.07,
+            "fee": 4.47
+        }
+    ]
+}

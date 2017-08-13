@@ -1,8 +1,3 @@
-// This is main process of Electron, started as first thing when your
-// app starts. This script is running through entire life of your application.
-// It doesn't have any windows which you can see on screen, but we can open
-// window from here.
-
 import path from 'path';
 import { app, Menu, Tray, nativeImage, shell } from 'electron';
 import IconChart from './iconChart';
@@ -12,13 +7,8 @@ import Colors from './colors';
 import jetpack from 'fs-jetpack';
 import AutoLaunch from 'auto-launch';
 
-// Special module holding environment variables which you declared
-// in config/env_xxx.json file.
 import env from './env';
 
-// Save userData in separate folders for each environment.
-// Thanks to this you can use production and development versions of the app
-// on same machine like those are two separate apps.
 if (env.name !== 'production') {
     const userDataPath = app.getPath('userData');
     app.setPath('userData', `${userDataPath} (${env.name})`);
@@ -72,20 +62,28 @@ app.on('ready', () => {
             }
         }
     ]);
-    appIcon.setToolTip('Cryptocoinwatch v0.1.0.');
+
+    appIcon.setToolTip(appNameSignature);
     appIcon.setContextMenu(contextMenu);
     appIcon.on('double-click', () => {
         shell.openExternal('https://www.cryptocompare.com/');
     });
-});
 
-const coinColor = {
-    BTC: '#FF8500',
-    ETH: '#51B0D1',
-    BCH: '#FFEB42',
-    XRP: '#CEEAF2',
-    LTC: '#CCCCCC'
-};
+    var lastExecution = Date.now();
+    var interval = Math.max(config.interval * 1000, 10000);
+    updateIcon();
+
+    // Check every 2 seconds if the icon was updated, if the computer awakes from sleep, the time passed doesn't count, so it forces an update.
+    setInterval(() => {
+        if (Date.now() - lastExecution > interval + 1000) updateIcon();
+    }, 2000);
+
+    // Main icon updater
+    setInterval(() => {
+        lastExecution = Date.now();
+        updateIcon();
+    }, interval);
+});
 
 const updateIcon = () => {
     const uniqueCoins = new Map();
@@ -119,7 +117,7 @@ const updateIcon = () => {
                 if (json.RAW[coin]) {
                     bars.push({
                         value: json.RAW[coin].USD.CHANGEPCT24HOUR,
-                        color: coinColor[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
+                        color: Colors.COIN[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
                     });
                     // TODO: Think about a way to improve this
                     variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
@@ -132,8 +130,8 @@ const updateIcon = () => {
             const subTotal = {
                 value: changeAvg,
                 color: {
-                    positive: '#6A9913',
-                    negative: '#DA3612'
+                    positive: Colors.SUBTOTAL.positive,
+                    negative: Colors.SUBTOTAL.negative
                 }
             };
 
@@ -152,21 +150,18 @@ const updateIcon = () => {
             const total = {
                 value: profitLossPct,
                 color: {
-                    positive: '#6A9913',
-                    negative: '#DA3612'
+                    positive: Colors.TOTAL.positive,
+                    negative: Colors.TOTAL.negative
                 }
             };
 
             iconChart.getFor(config.percentageLimit, subTotal, total, bars, (buffer) => {
                 appIcon.setImage(buffer);
-                appIcon.setToolTip('Coinwatch v0.1.0\n' + variableToolTip.substring(0, 127 - 'Cryptowatch v0.1.0\n'.length - fixedToolTip.length) + fixedToolTip);
+                appIcon.setToolTip(`${appNameSignature}\n${variableToolTip.substring(0, 127 - appNameSignature.length - 1 - fixedToolTip.length - 1)}\n${fixedToolTip}`);
             });
         })
         .catch(err => console.error(err));
 };
-
-setInterval(updateIcon, Math.max(config.interval * 1000, 10000));
-updateIcon();
 
 app.on('window-all-closed', () => {
     appIcon.destroy();

@@ -26,6 +26,11 @@ gulp.task('favicon', () => {
     projectDir.copy(configFile, destDir.path('favicon.ico'), { overwrite: true });
 });
 
+gulp.task('sampleConfig', () => {
+    const configFile = 'src/sampleConfig.json';
+    projectDir.copy(configFile, destDir.path('sampleConfig.json'), { overwrite: true });
+});
+
 gulp.task('watch', () => {
     const beepOnError = (done) => {
         return (err) => {
@@ -41,4 +46,4 @@ gulp.task('watch', () => {
     }));
 });
 
-gulp.task('build', ['bundle', 'favicon', 'environment']);
+gulp.task('build', ['bundle', 'sampleConfig', 'favicon', 'environment']);
