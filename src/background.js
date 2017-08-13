@@ -4,11 +4,7 @@
 // window from here.
 
 import path from 'path';
-import url from 'url';
 import { app, Menu, Tray, nativeImage, shell } from 'electron';
-import { devMenuTemplate } from './menu/dev_menu_template';
-import { editMenuTemplate } from './menu/edit_menu_template';
-import createWindow from './helpers/window';
 import IconChart from './iconChart';
 import configStore from './helpers/config';
 import fetch from 'node-fetch';
@@ -16,14 +12,6 @@ import fetch from 'node-fetch';
 // Special module holding environment variables which you declared
 // in config/env_xxx.json file.
 import env from './env';
-
-const setApplicationMenu = () => {
-    const menus = [editMenuTemplate];
-    if (env.name !== 'production') {
-        menus.push(devMenuTemplate);
-    }
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menus));
-};
 
 // Save userData in separate folders for each environment.
 // Thanks to this you can use production and development versions of the app
@@ -38,24 +26,6 @@ var appIcon = null;
 const iconChart = new IconChart();
 
 app.on('ready', () => {
-    setApplicationMenu();
-
-    const mainWindow = createWindow('main', {
-        width: 1000,
-        height: 600,
-        show: false
-    });
-
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'app.html'),
-        protocol: 'file:',
-        slashes: true,
-    }));
-
-    if (env.name === 'development') {
-        mainWindow.openDevTools();
-    }
-
     appIcon = new Tray(nativeImage.createFromPath(path.join(__dirname, 'favicon.ico')));
     var contextMenu = Menu.buildFromTemplate([
         {
@@ -78,7 +48,7 @@ app.on('ready', () => {
     appIcon.setContextMenu(contextMenu);
     appIcon.on('double-click', () => {
         shell.openExternal('https://www.cryptocompare.com/');
-    })
+    });
 });
 
 const coinColor = {
@@ -121,7 +91,7 @@ const updateIcon = () => {
                 if (json.RAW[coin]) {
                     bars.push({
                         value: json.RAW[coin].USD.CHANGEPCT24HOUR,
-                        color: coinColor[coin] || "#" + ((1 << 24) * Math.random() | 0).toString(16)
+                        color: coinColor[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
                     });
                     // TODO: Think about a way to improve this
                     variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
@@ -129,7 +99,7 @@ const updateIcon = () => {
                 }
             }
 
-            const changeAvg = totalChanged / bars.length
+            const changeAvg = totalChanged / bars.length;
             fixedToolTip += `Average: ${changeAvg.toFixed(2)}%\n`;
             const subTotal = {
                 value: changeAvg,
@@ -137,11 +107,11 @@ const updateIcon = () => {
                     positive: '#6A9913',
                     negative: '#DA3612'
                 }
-            }
+            };
 
             var paidValue = 0;
             var currentValue = 0;
-            uniqueCoins.forEach((value, key, map) => {
+            uniqueCoins.forEach((value, key) => {
                 if (json.RAW[key]) {
                     paidValue += uniqueCoins.get(key).paid;
                     currentValue += json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount;
@@ -157,15 +127,15 @@ const updateIcon = () => {
                     positive: '#6A9913',
                     negative: '#DA3612'
                 }
-            }
+            };
 
             iconChart.getFor(config.percentageLimit, subTotal, total, bars, (buffer) => {
                 appIcon.setImage(buffer);
                 appIcon.setToolTip('Coinwatch v0.1.0\n' + variableToolTip.substring(0, 127 - 'Cryptowatch v0.1.0\n'.length - fixedToolTip.length) + fixedToolTip);
-            })
+            });
         })
         .catch(err => console.error(err));
-}
+};
 
 setInterval(updateIcon, Math.max(config.interval * 1000, 10000));
 updateIcon();

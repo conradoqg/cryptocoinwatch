@@ -1,8 +1,6 @@
 const gulp = require('gulp');
-const less = require('gulp-less');
 const watch = require('gulp-watch');
 const batch = require('gulp-batch');
-const plumber = require('gulp-plumber');
 const jetpack = require('fs-jetpack');
 const bundle = require('./bundle');
 const utils = require('./utils');
@@ -18,20 +16,13 @@ gulp.task('bundle', () => {
     ]);
 });
 
-gulp.task('less', () => {
-    return gulp.src(srcDir.path('stylesheets/main.less'))
-        .pipe(plumber())
-        .pipe(less())
-        .pipe(gulp.dest(destDir.path('stylesheets')));
-});
-
 gulp.task('environment', () => {
     const configFile = `config/env_${utils.getEnvName()}.json`;
     projectDir.copy(configFile, destDir.path('env.json'), { overwrite: true });
 });
 
 gulp.task('favicon', () => {
-    const configFile = `src/favicon.ico`;
+    const configFile = 'src/favicon.ico';
     projectDir.copy(configFile, destDir.path('favicon.ico'), { overwrite: true });
 });
 
@@ -48,9 +39,6 @@ gulp.task('watch', () => {
     watch('src/**/*.js', batch((events, done) => {
         gulp.start('bundle', beepOnError(done));
     }));
-    watch('src/**/*.less', batch((events, done) => {
-        gulp.start('less', beepOnError(done));
-    }));
 });
 
-gulp.task('build', ['bundle', 'favicon', 'less', 'environment']);
+gulp.task('build', ['bundle', 'favicon', 'environment']);

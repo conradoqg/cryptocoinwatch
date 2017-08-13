@@ -19,5 +19,5 @@ export default {
 
     save: (data) => {
         userDataDir.write(configStoreFile, data, { atomic: true });
-    }    
+    }
 };
