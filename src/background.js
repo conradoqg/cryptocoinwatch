@@ -4,7 +4,6 @@ import IconChart from './iconChart';
 import configStore from './helpers/config';
 import fetch from 'node-fetch';
 import Colors from './colors';
-import jetpack from 'fs-jetpack';
 import AutoLaunch from 'auto-launch';
 
 import env from './env';
@@ -16,13 +15,12 @@ if (env.name !== 'production') {
 
 var appIcon = null;
 const config = configStore.load();
-const appManifest = jetpack.read('./package.json', 'json');
-const appNameSignature = `${appManifest.productName} v${appManifest.version}`;
+const appNameSignature = `${app.getName()} v${app.getVersion()}`;
 const iconChart = new IconChart();
 
 var appAutoLauncher = new AutoLaunch({
     name: appNameSignature,
-    path: `/Applications/${capitalize(appManifest.name)}.app`
+    path: `/Applications/${capitalize(app.getName())}.app`
 });
 
 appAutoLauncher.isEnabled()

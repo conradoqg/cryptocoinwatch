@@ -18,6 +18,15 @@
       "node_modules/**/*",
       "package.json"
     ],
+    "win": {
+        "target": ["nsis", "zip"]
+    },
+    "linux": {
+        "target": "default"
+    },
+    "mac": {
+        "target": "default"
+    },
     "publish": null
   },
   "scripts": {
