@@ -17,7 +17,7 @@ if (env.name !== 'production') {
 }
 console.log(`Environment: ${env.name}`);
 
-var appIcon = null;
+let appIcon = null;
 
 const dir = app.getPath('userData');
 const filePath = path.join(dir, 'settings.yaml.txt');
@@ -26,9 +26,8 @@ let settingsStore = new SettingsStore(filePath);
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
 const iconChart = new IconChart();
 
-var appAutoLauncher = new AutoLaunch({
-    name: appNameSignature,
-    path: `/Applications/${capitalize(app.getName())}.app`
+let appAutoLauncher = new AutoLaunch({
+    name: app.getName()
 });
 
 const checkAutoStartup = (shouldStartup) => {
