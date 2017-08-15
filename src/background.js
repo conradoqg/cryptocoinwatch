@@ -1,20 +1,28 @@
 import path from 'path';
 import { app, Menu, Tray, nativeImage, shell } from 'electron';
 import IconChart from './iconChart';
-import configStore from './helpers/config';
 import fetch from 'node-fetch';
 import Colors from './colors';
 import AutoLaunch from 'auto-launch';
+import SettingsStore from './settingsStore';
+import ManagedTimer from './managedTimer';
 
 import env from './env';
+
+console.log('Initializing...');
 
 if (env.name !== 'production') {
     const userDataPath = app.getPath('userData');
     app.setPath('userData', `${userDataPath} (${env.name})`);
 }
+console.log(`Environment: ${env.name}`);
 
 var appIcon = null;
-const config = configStore.load();
+
+const dir = app.getPath('userData');
+const filePath = path.join(dir, 'settings.yaml.txt');
+let settingsStore = new SettingsStore(filePath);
+
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
 const iconChart = new IconChart();
 
@@ -23,18 +31,23 @@ var appAutoLauncher = new AutoLaunch({
     path: `/Applications/${capitalize(app.getName())}.app`
 });
 
-appAutoLauncher.isEnabled()
-    .then(function (isEnabled) {
-        if (config.startWithOS) {
-            if (!isEnabled) appAutoLauncher.enable();
-        } else {
-            if (isEnabled) appAutoLauncher.disable();
-        }
+const checkAutoStartup = (shouldStartup) => {
+    console.log('Checking startup');
+    appAutoLauncher.isEnabled()
+        .then(function (isEnabled) {
+            if (shouldStartup) {
+                if (!isEnabled) appAutoLauncher.enable();
+            } else {
+                if (isEnabled) appAutoLauncher.disable();
+            }
 
-    })
-    .catch((err) => {
-        console.error(err);
-    });
+        })
+        .catch((err) => {
+            console.error(err);
+        });
+};
+
+checkAutoStartup(settingsStore.get('startWithOS'));
 
 function capitalize(s) {
     return s && s[0].toUpperCase() + s.slice(1);
@@ -47,7 +60,7 @@ app.on('ready', () => {
         {
             label: 'Settings',
             click: () => {
-                shell.openItem(configStore.filePath);
+                shell.openItem(settingsStore.filePath);
             }
         },
         {
@@ -67,43 +80,46 @@ app.on('ready', () => {
         shell.openExternal('https://www.cryptocompare.com/');
     });
 
-    var lastExecution = Date.now();
-    var interval = Math.max(config.interval * 1000, 10000);
-    updateIcon();
+    let validInterval = (interval) => Math.max(interval * 1000, 10000);
 
-    // Check every 2 seconds if the icon was updated, if the computer awakes from sleep, the time passed doesn't count, so it forces an update.
-    setInterval(() => {
-        if (Date.now() - lastExecution > interval + 1000) updateIcon();
-    }, 2000);
+    let timer = new ManagedTimer(validInterval(settingsStore.get('interval')), () => {
+        console.log('Updating icon');
+        return updateIcon();
+    });
 
-    // Main icon updater
-    setInterval(() => {
-        lastExecution = Date.now();
-        updateIcon();
-    }, interval);
+    timer.start();
+
+    settingsStore.on('changed', () => {
+        console.log('Settings changed');
+        timer.restart(validInterval(settingsStore.get('interval')));
+        checkAutoStartup(settingsStore.get('startWithOS'));
+    });
 });
+
+
 
 const updateIcon = () => {
     const uniqueCoins = new Map();
+    const transactions = settingsStore.get('transactions');
 
-    for (var i = 0; i < config.transactions.length; i++) {
-        if (!uniqueCoins.has(config.transactions[i].coin)) {
-            uniqueCoins.set(config.transactions[i].coin, {
-                amount: config.transactions[i].amount,
-                paid: (config.transactions[i].price * config.transactions[i].amount) + config.transactions[i].fee
+    for (var i = 0; i < transactions.length; i++) {
+        if (!uniqueCoins.has(transactions[i].coin)) {
+            uniqueCoins.set(transactions[i].coin, {
+                amount: transactions[i].amount,
+                paid: (transactions[i].price * transactions[i].amount) + transactions[i].fee
             });
         } else {
-            const coin = uniqueCoins.get(config.transactions[i].coin);
-            coin.amount += config.transactions[i].amount;
-            coin.paid += (config.transactions[i].price * config.transactions[i].amount) + config.transactions[i].fee;
+            const coin = uniqueCoins.get(transactions[i].coin);
+            coin.amount += transactions[i].amount;
+            coin.paid += (transactions[i].price * transactions[i].amount) + transactions[i].fee;
 
-            uniqueCoins.set(config.transactions[i].coin, coin);
+            uniqueCoins.set(transactions[i].coin, coin);
         }
     }
 
     let coinsParam = Array.from(uniqueCoins.keys()).join(',');
 
-    fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${config.market}&extraParams=cryptowatch`)
+    fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${settingsStore.get('market')}&extraParams=cryptowatch`)
         .then(res => res.json())
         .then(json => {
             const bars = [];
@@ -153,7 +169,7 @@ const updateIcon = () => {
                 }
             };
 
-            iconChart.getFor(config.percentageLimit, subTotal, total, bars, (buffer) => {
+            iconChart.getFor(settingsStore.get('percentageLimit'), subTotal, total, bars, (buffer) => {
                 appIcon.setImage(buffer);
                 appIcon.setToolTip(`${appNameSignature}\n${variableToolTip.substring(0, 127 - appNameSignature.length - 1 - fixedToolTip.length - 1)}\n${fixedToolTip}`);
             });

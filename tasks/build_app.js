@@ -11,8 +11,7 @@ const destDir = jetpack.cwd('./app');
 
 gulp.task('bundle', () => {
     return Promise.all([
-        bundle(srcDir.path('background.js'), destDir.path('background.js')),
-        bundle(srcDir.path('app.js'), destDir.path('app.js')),
+        bundle(srcDir.path('background.js'), destDir.path('background.js'))
     ]);
 });
 
@@ -27,8 +26,8 @@ gulp.task('favicon', () => {
 });
 
 gulp.task('sampleConfig', () => {
-    const configFile = 'src/sampleConfig.json';
-    projectDir.copy(configFile, destDir.path('sampleConfig.json'), { overwrite: true });
+    const configFile = 'src/sampleSettings.yaml.txt';
+    projectDir.copy(configFile, destDir.path('sampleSettings.yaml.txt'), { overwrite: true });
 });
 
 gulp.task('watch', () => {

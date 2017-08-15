@@ -1,0 +1,58 @@
+startWithOS: true         # Should it start with your OS?
+interval: 60              # How many seconds between each update (minimum of 10 seconds)?
+percentageLimit:          # A full bar in the tray icon would reflect wich percentage?
+  coin: 10                # When the coin price reaches that value the bar will be full (Left half of the tray icon)
+  subTotal: 10            # When the mean percentagem of the last 24hrs coin price variance reaches that value the bar will be full (First bar of the right side of the tray icon)
+  total: 20               # When the profit/loss percentage reaches that value the bar will be full (Second bar of the right side of the tray icon)
+market: Coinbase          # Which market should the price based on? (For the full list of available markets, check this link: https://www.cryptocompare.com/api/#introduction)
+transactions:             # List of transactions
+- coin: BTC               # Coin Symbol
+  amount: 0.00416396      # Amount
+  date: 2017-07-12        # Date of the transaction
+  price: 2401.56          # Price paid
+  fee: 0.99               # Paid fee or zero
+- coin: ETH
+  amount: 0.10043148
+  date: 2017-07-14
+  price: 199.14
+  fee: 1.49
+- coin: BTC
+  amount: 0.0741627
+  date: 2017-07-25
+  price: 2593.35
+  fee: 7.67
+- coin: ETH
+  amount: 0.47523152
+  date: 2017-07-28
+  price: 192.22
+  fee: 3.65
+- coin: ETH
+  amount: 0.2569805
+  date: 2017-07-30
+  price: 198.5
+  fee: 2.99
+- coin: LTC
+  amount: 1
+  date: 2017-08-07
+  price: 46.4
+  fee: 1.99
+- coin: ETH
+  amount: 0.267
+  date: 2017-08-07
+  price: 271.72
+  fee: 2.99
+- coin: BTC
+  amount: 0.03868292
+  date: 2017-08-08
+  price: 3380.82
+  fee: 5.22
+- coin: ETH
+  amount: 1.00016769
+  date: 2017-08-11
+  price: 316.95
+  fee: 4.72
+- coin: BTC
+  amount: 0.07842993
+  date: 2017-08-12
+  price: 3825.07
+  fee: 4.47
