@@ -120,64 +120,66 @@ const updateIcon = () => {
         }
     }
 
-    let coinsParam = Array.from(uniqueCoins.keys()).join(',');
+    if (uniqueCoins.size > 0) {
+        let coinsParam = Array.from(uniqueCoins.keys()).join(',');
 
-    fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${settingsStore.get('market')}&extraParams=cryptowatch`)
-        .then(res => res.json())
-        .then(json => {
-            const bars = [];
-            var fixedToolTip = '';
-            var variableToolTip = '';
-            var totalChanged = 0;
+        fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${settingsStore.get('market')}&extraParams=cryptowatch`)
+            .then(res => res.json())
+            .then(json => {
+                const bars = [];
+                var fixedToolTip = '';
+                var variableToolTip = '';
+                var totalChanged = 0;
 
-            for (var coin in json.RAW) {
-                if (json.RAW[coin]) {
-                    bars.push({
-                        value: json.RAW[coin].USD.CHANGEPCT24HOUR,
-                        color: Colors.COIN[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
-                    });
-                    // TODO: Think about a way to improve this
-                    variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
-                    totalChanged += json.RAW[coin].USD.CHANGEPCT24HOUR;
+                for (var coin in json.RAW) {
+                    if (json.RAW[coin]) {
+                        bars.push({
+                            value: json.RAW[coin].USD.CHANGEPCT24HOUR,
+                            color: Colors.COIN[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
+                        });
+                        // TODO: Think about a way to improve this
+                        variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
+                        totalChanged += json.RAW[coin].USD.CHANGEPCT24HOUR;
+                    }
                 }
-            }
 
-            const changeAvg = totalChanged / bars.length;
-            fixedToolTip += `Average: ${changeAvg.toFixed(2)}%\n`;
-            const subTotal = {
-                value: changeAvg,
-                color: {
-                    positive: Colors.SUBTOTAL.positive,
-                    negative: Colors.SUBTOTAL.negative
-                }
-            };
+                const changeAvg = totalChanged / bars.length;
+                fixedToolTip += `Average: ${changeAvg.toFixed(2)}%\n`;
+                const subTotal = {
+                    value: changeAvg,
+                    color: {
+                        positive: Colors.SUBTOTAL.positive,
+                        negative: Colors.SUBTOTAL.negative
+                    }
+                };
 
-            var paidValue = 0;
-            var currentValue = 0;
-            uniqueCoins.forEach((value, key) => {
-                if (json.RAW[key]) {
-                    paidValue += uniqueCoins.get(key).paid;
-                    currentValue += json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount;
-                }
-            });
+                var paidValue = 0;
+                var currentValue = 0;
+                uniqueCoins.forEach((value, key) => {
+                    if (json.RAW[key]) {
+                        paidValue += uniqueCoins.get(key).paid;
+                        currentValue += json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount;
+                    }
+                });
 
-            var profitLossPct = ((currentValue * 100) / paidValue) - 100;
-            var profitLoss = currentValue - paidValue;
-            fixedToolTip += `Profit/Loss: U$${profitLoss.toFixed(2)} (${profitLossPct.toFixed(2)}%)`;
-            const total = {
-                value: profitLossPct,
-                color: {
-                    positive: Colors.TOTAL.positive,
-                    negative: Colors.TOTAL.negative
-                }
-            };
+                var profitLossPct = ((currentValue * 100) / paidValue) - 100;
+                var profitLoss = currentValue - paidValue;
+                fixedToolTip += `Profit/Loss: U$${profitLoss.toFixed(2)} (${profitLossPct.toFixed(2)}%)`;
+                const total = {
+                    value: profitLossPct,
+                    color: {
+                        positive: Colors.TOTAL.positive,
+                        negative: Colors.TOTAL.negative
+                    }
+                };
 
-            iconChart.getFor(settingsStore.get('percentageLimit'), subTotal, total, bars, (buffer) => {
-                appIcon.setImage(buffer);
-                appIcon.setToolTip(`${appNameSignature}\n${variableToolTip.substring(0, 127 - appNameSignature.length - 1 - fixedToolTip.length - 1)}\n${fixedToolTip}`);
-            });
-        })
-        .catch(err => console.error(err));
+                iconChart.getFor(settingsStore.get('percentageLimit'), subTotal, total, bars, (buffer) => {
+                    appIcon.setImage(buffer);
+                    appIcon.setToolTip(`${appNameSignature}\n${variableToolTip.substring(0, 127 - appNameSignature.length - 1 - fixedToolTip.length - 1)}\n${fixedToolTip}`);
+                });
+            })
+            .catch(err => console.error(err));
+    }
 };
 
 app.on('window-all-closed', () => {
