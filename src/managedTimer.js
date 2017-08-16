@@ -1,4 +1,4 @@
-module.exports = class ManagedTimer {
+class ManagedTimer {
     constructor(ms, fn) {
         this.ms = ms;
         this.fn = fn;
@@ -46,3 +46,5 @@ module.exports = class ManagedTimer {
         return this.fn();
     }
 }
+
+module.exports = ManagedTimer;

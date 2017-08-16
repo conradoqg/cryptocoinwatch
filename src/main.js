@@ -1,4 +1,5 @@
 const path = require('path');
+const os = require('os');
 const app = require('electron').app;
 const Menu = require('electron').Menu;
 const Tray = require('electron').Tray;
@@ -53,7 +54,9 @@ const checkAutoStartup = (shouldStartup) => {
 checkAutoStartup(settingsStore.get('startWithOS'));
 
 app.on('ready', () => {
-    app.dock.hide();
+    if (os.platform == 'darwin') {
+        app.dock.hide();
+    }
     appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
 
     var contextMenu = Menu.buildFromTemplate([
