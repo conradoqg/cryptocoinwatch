@@ -1,8 +1,11 @@
+# Settings
+# Every change made in this file will automatically update the application
+
 startWithOS: true         # Should it start with your OS?
 interval: 60              # How many seconds between each update (minimum of 10 seconds)?
 percentageLimit:          # A full bar in the tray icon would reflect wich percentage?
   coin: 10                # When the coin price reaches that value the bar will be full (Left half of the tray icon)
-  subTotal: 10            # When the mean percentagem of the last 24hrs coin price variance reaches that value the bar will be full (First bar of the right side of the tray icon)
+  subTotal: 10            # When the mean percentage of the last 24hrs coin price variance reaches that value the bar will be full (First bar of the right side of the tray icon)
   total: 20               # When the profit/loss percentage reaches that value the bar will be full (Second bar of the right side of the tray icon)
 market: Coinbase          # Which market should the price based on? (For the full list of available markets, check this link: https://www.cryptocompare.com/api/#introduction)
 transactions:             # List of transactions

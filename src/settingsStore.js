@@ -8,6 +8,7 @@ const jetpack = require('fs-jetpack');
 class SettingsStore extends EventEmitter {
     constructor(filePath) {
         super();
+        this.watcher = null;
         this.filePath = filePath;
         this.loadNecessary = true;
         this.load();
@@ -22,6 +23,7 @@ class SettingsStore extends EventEmitter {
                 userDataDir.write(this.filePath, jetpack.cwd(app.getAppPath()).read('build/sampleSettings.yaml.txt', 'utf8'), { atomic: true });
             }
             this.data = yaml.safeLoad(fs.readFileSync(this.filePath));
+            this.loadNecessary = false;
         }
     }
 
@@ -33,9 +35,13 @@ class SettingsStore extends EventEmitter {
     startFileMonitor() {
         let fsTimeout = null;
 
-        fs.watch(this.filePath, { persistent: false }, () => {
-            this.loadNecessary = true;
-            if (!fsTimeout) fsTimeout = setTimeout(() => { this.emit('changed'); fsTimeout = null; }, 300);
+        this.watcher = fs.watchFile(this.filePath, { persistent: false, interval: 2000 }, () => {
+            try {
+                this.loadNecessary = true;
+                if (!fsTimeout) fsTimeout = setTimeout(() => { this.emit('changed'); fsTimeout = null; }, 300);
+            } catch (ex) {
+
+            }
         });
     }
 }
