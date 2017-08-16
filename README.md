@@ -3,7 +3,7 @@
 ## Development
 
 ```sh
-# Clonning repository
+# Cloning the repository
 $ git clone git@github.com:conradoqg/cryptocoinwatch.git
 $ cd cryptocoinwatch
 $ npm install
