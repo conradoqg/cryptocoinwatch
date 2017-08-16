@@ -1,61 +1,53 @@
 {
-  "name": "cryptocoinwatch",
-  "productName": "Cryptocoin Watch",
-  "description": "Small utility app to watch cryptocoin quote changes and your profits and losses.",
-  "version": "0.1.0",
-  "author": "Conrado Quilles Gomes <conradoqg@gmail.com>",
-  "homepage": "https://github.com/conradoqg/cryptocoinwatch",
-  "license": "MIT",
-  "main": "app/background.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/conradoqg/cryptocoinwatch.git"
-  },
-  "build": {
-    "appId": "com.github.conradoqg.cryptocoinwatch",
-    "files": [
-      "app/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "zip"
-      ]
+    "name": "cryptocoinwatch",
+    "productName": "Cryptocoin Watch",
+    "description": "Small utility app to watch cryptocoin quote changes and your profits and losses.",
+    "version": "0.2.0",
+    "author": "Conrado Quilles Gomes <conradoqg@gmail.com>",
+    "homepage": "https://github.com/conradoqg/cryptocoinwatch",
+    "license": "MIT",
+    "main": "src/main.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/conradoqg/cryptocoinwatch.git"
     },
-    "linux": {
-      "target": "default"
+    "build": {
+        "appId": "com.github.conradoqg.cryptocoinwatch",
+        "files": [
+            "src/**/*",
+            "node_modules/**/*",
+            "package.json",
+            "build/icon.ico",
+            "build/sampleSettings.yaml.txt"
+        ],
+        "win": {
+            "target": [
+                "nsis",
+                "zip"
+            ]
+        },
+        "linux": {
+            "target": "default"
+        },
+        "mac": {
+            "target": "default"
+        },
+        "publish": null
     },
-    "mac": {
-      "target": "default"
+    "scripts": {
+        "dist": "electron-builder",
+        "start": "electron ."
     },
-    "publish": null
-  },
-  "scripts": {
-    "postinstall": "install-app-deps",
-    "build": "gulp build",
-    "prerelease": "gulp build --env=production",
-    "release": "build",
-    "start": "gulp start"
-  },
-  "dependencies": {
-    "auto-launch": "^5.0.1",
-    "fs-jetpack": "^1.0.0",
-    "js-yaml": "^3.9.1",
-    "node-fetch": "^1.7.2",
-    "object-path": "^0.11.4",
-    "pureimage": "git+https://github.com/joshmarinacci/node-pureimage.git"
-  },
-  "devDependencies": {
-    "electron": "^1.6.11",
-    "electron-builder": "^19.16.0",
-    "gulp": "^3.9.1",
-    "gulp-batch": "^1.0.5",
-    "gulp-util": "^3.0.8",
-    "gulp-watch": "^4.3.11",
-    "minimist": "^1.2.0",
-    "rollup": "^0.45.2",
-    "spectron": "^3.7.2"
-  }
+    "dependencies": {
+        "auto-launch": "^5.0.1",
+        "fs-jetpack": "^1.0.0",
+        "js-yaml": "^3.9.1",
+        "node-fetch": "^1.7.2",
+        "object-path": "^0.11.4",
+        "pureimage": "git+https://github.com/joshmarinacci/node-pureimage.git"
+    },
+    "devDependencies": {
+        "electron": "^1.6.11",
+        "electron-builder": "^19.16.0"
+    }
 }

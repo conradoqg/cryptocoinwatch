@@ -1,4 +1,4 @@
-export default class ManagedTimer {
+module.exports = class ManagedTimer {
     constructor(ms, fn) {
         this.ms = ms;
         this.fn = fn;

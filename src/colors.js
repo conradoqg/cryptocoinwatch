@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     SUBTOTAL: {
         positive: '#6A9913',
         negative: '#DA3612'

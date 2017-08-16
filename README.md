@@ -1,4 +1,4 @@
-# ![Cryptocoin Watch](cryptocoinwatch.png) Cryptocoin Watch - A small utility app to watch cryptocoin quote changes and your profits and losses.
+# ![Cryptocoin Watch](build/icons/20x20.png) Cryptocoin Watch - A small utility app to watch cryptocoin quote changes and your profits and losses.
 
 ## Development
 
@@ -7,6 +7,12 @@
 $ git clone git@github.com:conradoqg/cryptocoinwatch.git
 $ cd cryptocoinwatch
 $ npm install
+
+# Starting
+$ npm start
+
+# Distributing
+$ npm run dist
 ```
 
 ## Contribution and License Agreement

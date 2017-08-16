@@ -1,21 +1,24 @@
-import path from 'path';
-import { app, Menu, Tray, nativeImage, shell } from 'electron';
-import IconChart from './iconChart';
-import fetch from 'node-fetch';
-import Colors from './colors';
-import AutoLaunch from 'auto-launch';
-import SettingsStore from './settingsStore';
-import ManagedTimer from './managedTimer';
-
-import env from './env';
+const path = require('path');
+const app = require('electron').app;
+const Menu = require('electron').Menu;
+const Tray = require('electron').Tray;
+const nativeImage = require('electron').nativeImage;
+const shell = require('electron').shell;
+const IconChart = require('./iconChart');
+const fetch = require('node-fetch');
+const Colors = require('./colors');
+const AutoLaunch = require('auto-launch');
+const SettingsStore = require('./settingsStore');
+const ManagedTimer = require('./managedTimer');
+const env = process.env.ENV || 'production';
 
 console.log('Initializing...');
 
-if (env.name !== 'production') {
+if (env !== 'production') {
     const userDataPath = app.getPath('userData');
-    app.setPath('userData', `${userDataPath} (${env.name})`);
+    app.setPath('userData', `${userDataPath} (${env})`);
 }
-console.log(`Environment: ${env.name}`);
+console.log(`Environment: ${env}`);
 
 let appIcon = null;
 
@@ -34,12 +37,13 @@ const checkAutoStartup = (shouldStartup) => {
     console.log('Checking startup');
     appAutoLauncher.isEnabled()
         .then(function (isEnabled) {
-            if (shouldStartup) {
-                if (!isEnabled) appAutoLauncher.enable();
-            } else {
-                if (isEnabled) appAutoLauncher.disable();
+            if (process.env.ENV != 'production') {
+                if (shouldStartup) {
+                    if (!isEnabled) appAutoLauncher.enable();
+                } else {
+                    if (isEnabled) appAutoLauncher.disable();
+                }
             }
-
         })
         .catch((err) => {
             console.error(err);
@@ -49,7 +53,7 @@ const checkAutoStartup = (shouldStartup) => {
 checkAutoStartup(settingsStore.get('startWithOS'));
 
 app.on('ready', () => {
-    appIcon = new Tray(nativeImage.createFromPath(path.join(__dirname, 'favicon.ico')));
+    appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
 
     var contextMenu = Menu.buildFromTemplate([
         {

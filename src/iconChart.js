@@ -1,6 +1,6 @@
-import PImage from 'pureimage';
-import stream from 'stream';
-import { nativeImage } from 'electron';
+const PImage = require('pureimage');
+const stream = require('stream');
+const nativeImage = require('electron').nativeImage;
 
 class IconChart {
     constructor() {
@@ -95,4 +95,4 @@ function colorLuminance(hex, lum) {
     return rgb;
 }
 
-export default IconChart;
+module.exports = IconChart;
