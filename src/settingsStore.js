@@ -19,7 +19,7 @@ export default class SettingsStore extends EventEmitter {
             if (!fs.existsSync(this.filePath)) {
                 const dir = app.getPath('userData');
                 const userDataDir = jetpack.cwd(dir);
-                userDataDir.write(this.filePath, jetpack.read('./app/sampleSettings.yaml.txt', 'utf8'), { atomic: true });
+                userDataDir.write(this.filePath, jetpack.cwd(__dirname).read('sampleSettings.yaml.txt', 'utf8'), { atomic: true });
             }
             this.data = yaml.safeLoad(fs.readFileSync(this.filePath));
         }
