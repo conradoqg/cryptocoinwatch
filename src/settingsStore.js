@@ -1,9 +1,9 @@
 const app = require('electron').app;
 const fs = require('fs');
+const path = require('path');
 const yaml = require('js-yaml');
 const objectPath = require('object-path');
 const EventEmitter = require('events').EventEmitter;
-const jetpack = require('fs-jetpack');
 
 class SettingsStore extends EventEmitter {
     constructor(filePath) {
@@ -17,11 +17,7 @@ class SettingsStore extends EventEmitter {
 
     load() {
         if (this.loadNecessary) {
-            if (!fs.existsSync(this.filePath)) {
-                const dir = app.getPath('userData');
-                const userDataDir = jetpack.cwd(dir);
-                userDataDir.write(this.filePath, jetpack.cwd(app.getAppPath()).read('build/sampleSettings.yaml.txt', 'utf8'), { atomic: true });
-            }
+            if (!fs.existsSync(this.filePath)) fs.writeFileSync(this.filePath, fs.readFileSync(path.join(app.getAppPath(), 'build/sampleSettings.yaml.txt')));
             this.data = yaml.safeLoad(fs.readFileSync(this.filePath));
             this.loadNecessary = false;
         }
@@ -40,7 +36,7 @@ class SettingsStore extends EventEmitter {
                 this.loadNecessary = true;
                 if (!fsTimeout) fsTimeout = setTimeout(() => { this.emit('changed'); fsTimeout = null; }, 300);
             } catch (ex) {
-
+                console.error(ex);
             }
         });
     }

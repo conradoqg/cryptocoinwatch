@@ -2,7 +2,7 @@
     "name": "cryptocoinwatch",
     "productName": "Cryptocoin Watch",
     "description": "Small utility app to watch cryptocoin quote changes and your profits and losses.",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "author": "Conrado Quilles Gomes <conradoqg@gmail.com>",
     "homepage": "https://github.com/conradoqg/cryptocoinwatch",
     "license": "MIT",
@@ -40,7 +40,6 @@
     },
     "dependencies": {
         "auto-launch": "^5.0.1",
-        "fs-jetpack": "^1.0.0",
         "js-yaml": "^3.9.1",
         "node-fetch": "^1.7.2",
         "object-path": "^0.11.4",

@@ -12,6 +12,7 @@ module.exports = {
         ETH: '#51B0D1',
         BCH: '#FFEB42',
         XRP: '#CEEAF2',
-        LTC: '#CCCCCC'
+        LTC: '#CCCCCC',
+        RANDOM: '#' + ((1 << 24) * Math.random() | 0).toString(16)
     }
 };

@@ -1,105 +1,82 @@
 const path = require('path');
 const os = require('os');
 const app = require('electron').app;
-const Menu = require('electron').Menu;
-const Tray = require('electron').Tray;
 const nativeImage = require('electron').nativeImage;
 const shell = require('electron').shell;
+const Menu = require('electron').Menu;
+const Tray = require('electron').Tray;
 const IconChart = require('./iconChart');
 const fetch = require('node-fetch');
-const Colors = require('./colors');
+const Theme = require('./theme');
 const AutoLaunch = require('auto-launch');
 const SettingsStore = require('./settingsStore');
 const ManagedTimer = require('./managedTimer');
 const env = process.env.ENV || 'production';
+const Colors = Theme.default;
 
 console.log('Initializing...');
 
 if (env !== 'production') {
-    const userDataPath = app.getPath('userData');
-    app.setPath('userData', `${userDataPath} (${env})`);
+    app.setPath('userData', `${app.getPath('userData')} (${env})`);
 }
 console.log(`Environment: ${env}`);
 
-let appIcon = null;
-
-const dir = app.getPath('userData');
-const filePath = path.join(dir, 'settings.yaml.txt');
-let settingsStore = new SettingsStore(filePath);
-
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
-const iconChart = new IconChart();
+const filePath = path.join(app.getPath('userData'), 'settings.yaml.txt');
+const settingsStore = new SettingsStore(filePath);
 
-let appAutoLauncher = new AutoLaunch({
+let appIcon = null;
+const iconChart = new IconChart();
+const appAutoLauncher = new AutoLaunch({
     name: app.getName()
 });
-
-const checkAutoStartup = (shouldStartup) => {
-    console.log('Checking startup');
-    appAutoLauncher.isEnabled()
-        .then(function (isEnabled) {
-            if (process.env.ENV != 'production') {
-                if (shouldStartup) {
-                    if (!isEnabled) appAutoLauncher.enable();
-                } else {
-                    if (isEnabled) appAutoLauncher.disable();
-                }
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-        });
-};
-
-checkAutoStartup(settingsStore.get('startWithOS'));
+const timer = new ManagedTimer(() => {
+    console.log('Updating icon');
+    return updateIcon();
+});
 
 app.on('ready', () => {
-    if (os.platform == 'darwin') {
-        app.dock.hide();
-    }
-    appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
+    if (os.platform == 'darwin') app.dock.hide();
 
-    var contextMenu = Menu.buildFromTemplate([
+    appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
+    appIcon.setToolTip(appNameSignature);
+    appIcon.setContextMenu(createContextMenu());
+    appIcon.on('double-click', () => shell.openExternal('https://www.cryptocompare.com/'));
+
+    checkAutoStartup(settingsStore.get('startWithOS'));
+
+    updateState();
+    settingsStore.on('changed', () => updateState());
+});
+
+app.on('window-all-closed', () => {
+    appIcon.destroy();
+    app.quit();
+});
+
+const createContextMenu = () => {
+    return Menu.buildFromTemplate([
         {
             label: 'Settings',
-            click: () => {
-                shell.openItem(settingsStore.filePath);
-            }
+            click: () => shell.openItem(settingsStore.filePath)
         },
         {
             type: 'separator'
         },
         {
             label: 'Exit',
-            click: () => {
-                app.quit();
-            }
+            click: () => app.quit()
         }
     ]);
+};
 
-    appIcon.setToolTip(appNameSignature);
-    appIcon.setContextMenu(contextMenu);
-    appIcon.on('double-click', () => {
-        shell.openExternal('https://www.cryptocompare.com/');
-    });
+const validInterval = (interval) => Math.max(interval * 1000, 10000);
 
-    let validInterval = (interval) => Math.max(interval * 1000, 10000);
-
-    let timer = new ManagedTimer(validInterval(settingsStore.get('interval')), () => {
-        console.log('Updating icon');
-        return updateIcon();
-    });
-
-    timer.start();
-
-    settingsStore.on('changed', () => {
-        console.log('Settings changed');
-        timer.restart(validInterval(settingsStore.get('interval')));
-        checkAutoStartup(settingsStore.get('startWithOS'));
-    });
-});
-
-
+const updateState = () => {
+    console.log('Settings changed');
+    timer.start(validInterval(settingsStore.get('interval')));
+    checkAutoStartup(settingsStore.get('startWithOS'));
+};
 
 const updateIcon = () => {
     const uniqueCoins = new Map();
@@ -127,15 +104,20 @@ const updateIcon = () => {
             .then(res => res.json())
             .then(json => {
                 const bars = [];
-                var fixedToolTip = '';
-                var variableToolTip = '';
-                var totalChanged = 0;
+                let fixedToolTip = '';
+                let variableToolTip = '';
+                let totalChanged = 0;
 
                 for (var coin in json.RAW) {
                     if (json.RAW[coin]) {
+                        const baseColor = Colors.COIN[coin] || Colors.COIN.RANDOM;
+
                         bars.push({
                             value: json.RAW[coin].USD.CHANGEPCT24HOUR,
-                            color: Colors.COIN[coin] || '#' + ((1 << 24) * Math.random() | 0).toString(16)
+                            color: {
+                                positive: baseColor,
+                                negaive: Theme.colorLuminance(baseColor, -0.5)
+                            }
                         });
                         // TODO: Think about a way to improve this
                         variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
@@ -153,8 +135,8 @@ const updateIcon = () => {
                     }
                 };
 
-                var paidValue = 0;
-                var currentValue = 0;
+                let paidValue = 0;
+                let currentValue = 0;
                 uniqueCoins.forEach((value, key) => {
                     if (json.RAW[key]) {
                         paidValue += uniqueCoins.get(key).paid;
@@ -162,8 +144,8 @@ const updateIcon = () => {
                     }
                 });
 
-                var profitLossPct = ((currentValue * 100) / paidValue) - 100;
-                var profitLoss = currentValue - paidValue;
+                let profitLossPct = ((currentValue * 100) / paidValue) - 100;
+                let profitLoss = currentValue - paidValue;
                 fixedToolTip += `Profit/Loss: U$${profitLoss.toFixed(2)} (${profitLossPct.toFixed(2)}%)`;
                 const total = {
                     value: profitLossPct,
@@ -182,7 +164,19 @@ const updateIcon = () => {
     }
 };
 
-app.on('window-all-closed', () => {
-    appIcon.destroy();
-    app.quit();
-});
+const checkAutoStartup = (shouldStartup) => {
+    console.log('Checking startup');
+    appAutoLauncher.isEnabled()
+        .then(function (isEnabled) {
+            if (process.env.ENV != 'production') {
+                if (shouldStartup) {
+                    if (!isEnabled) appAutoLauncher.enable();
+                } else {
+                    if (isEnabled) appAutoLauncher.disable();
+                }
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+        });
+};

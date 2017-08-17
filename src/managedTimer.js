@@ -1,11 +1,15 @@
 class ManagedTimer {
-    constructor(ms, fn) {
-        this.ms = ms;
+    constructor(fn) {
         this.fn = fn;
         this.lastExecution = null;
     }
 
-    start() {
+    start(ms) {
+        if (ms != null) {
+            this.ms = ms;
+            this.stop();
+        }
+
         this.intervalTimer = setInterval(() => {
             try {
                 return this.run();
@@ -31,14 +35,6 @@ class ManagedTimer {
         if (this.intervalTimer) clearInterval(this.intervalTimer);
         if (this.checkerTimer) clearInterval(this.checkerTimer);
         this.lastExecution = null;
-    }
-
-    restart(ms) {
-        if (ms != null) {
-            this.ms = ms;
-            this.stop();
-        }
-        this.start();
     }
 
     run() {
