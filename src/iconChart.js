@@ -11,7 +11,7 @@ class IconChart {
         this.largeBarWidth = 4;
     }
 
-    getFor(percentageLimit, subTotal, total, bars, callback) {
+    getFor(percentageLimit, bars, subTotal, total, callback) {
         const isPositive = (value) => (value >= 0);
 
         // Clear bar

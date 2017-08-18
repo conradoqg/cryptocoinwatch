@@ -6,13 +6,12 @@ const shell = require('electron').shell;
 const Menu = require('electron').Menu;
 const Tray = require('electron').Tray;
 const IconChart = require('./iconChart');
-const fetch = require('node-fetch');
-const Theme = require('./theme');
+const Theme = require('./theme').default;
 const AutoLaunch = require('auto-launch');
 const SettingsStore = require('./settingsStore');
 const ManagedTimer = require('./managedTimer');
 const env = process.env.ENV || 'production';
-const Colors = Theme.default;
+const StatisticsCalculator = require('./statisticsCalculator');
 
 console.log('Initializing...');
 
@@ -22,8 +21,7 @@ if (env !== 'production') {
 console.log(`Environment: ${env}`);
 
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
-const filePath = path.join(app.getPath('userData'), 'settings.yaml.txt');
-const settingsStore = new SettingsStore(filePath);
+const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
 
 let appIcon = null;
 const iconChart = new IconChart();
@@ -34,6 +32,7 @@ const timer = new ManagedTimer(() => {
     console.log('Updating icon');
     return updateIcon();
 });
+let tooltipMode = 1;
 
 app.on('ready', () => {
     if (os.platform == 'darwin') app.dock.hide();
@@ -41,7 +40,11 @@ app.on('ready', () => {
     appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
     appIcon.setToolTip(appNameSignature);
     appIcon.setContextMenu(createContextMenu());
-    appIcon.on('double-click', () => shell.openExternal('https://www.cryptocompare.com/'));
+    appIcon.on('click', () => {
+        tooltipMode = (tooltipMode == 1 ? 2 : 1);
+        updateIcon();
+    });
+    appIcon.on('double-click', () => shell.openExternal(settingsStore.get('website') || 'https://www.cryptocompare.com/'));
 
     checkAutoStartup(settingsStore.get('startWithOS'));
 
@@ -59,6 +62,10 @@ const createContextMenu = () => {
         {
             label: 'Settings',
             click: () => shell.openItem(settingsStore.filePath)
+        },
+        {
+            label: 'Help',
+            click: () => shell.openExternal(`https://github.com/conradoqg/cryptocoinwatch/blob/v${app.getVersion()}/HELP.md`)
         },
         {
             type: 'separator'
@@ -79,89 +86,52 @@ const updateState = () => {
 };
 
 const updateIcon = () => {
-    const uniqueCoins = new Map();
-    const transactions = settingsStore.get('transactions');
+    StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('market'))
+        .then(({ coins, subTotal, total }) => {
+            let summaryToolTip = '';
+            let coinToolTip = '';
 
-    for (var i = 0; i < transactions.length; i++) {
-        if (!uniqueCoins.has(transactions[i].coin)) {
-            uniqueCoins.set(transactions[i].coin, {
-                amount: transactions[i].amount,
-                paid: (transactions[i].price * transactions[i].amount) + transactions[i].fee
+            let coinsBar = coins.map((item) => {
+                const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
+                coinToolTip += `${item.coin}: $${item.price} (${item.changePct24Hour.toFixed(2)}%) = U$${item.total.toFixed(2)}\n`;
+                return {
+                    value: item.changePct24Hour,
+                    max: item.high24Hour,
+                    min: item.low24Hour,
+                    color: {
+                        positive: coinColor,
+                        negative: Theme.colorLuminance(coinColor, -0.5)
+                    }
+                };
             });
-        } else {
-            const coin = uniqueCoins.get(transactions[i].coin);
-            coin.amount += transactions[i].amount;
-            coin.paid += (transactions[i].price * transactions[i].amount) + transactions[i].fee;
 
-            uniqueCoins.set(transactions[i].coin, coin);
-        }
-    }
+            summaryToolTip += `Coin change: ${subTotal.changePctAvg.toFixed(2)}%\n`;
+            let subTotalBar = {
+                value: subTotal.changePctAvg,
+                max: subTotal.maxChangePctAvg,
+                min: subTotal.minChangePctAvg,
+                color: Theme.SUBTOTAL
+            };
 
-    if (uniqueCoins.size > 0) {
-        let coinsParam = Array.from(uniqueCoins.keys()).join(',');
+            summaryToolTip += `Paid/Current: U$${total.paidValue.toFixed(2)} - U$${total.currentValue.toFixed(2)}\n`;
+            summaryToolTip += `Profit/Loss: U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
+            let totalBar = {
+                value: total.profitLossPct,
+                max: total.maxProfitLossPct,
+                min: total.minProfitLossPct,
+                color: Theme.TOTAL
+            };
 
-        fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${settingsStore.get('market')}&extraParams=cryptowatch`)
-            .then(res => res.json())
-            .then(json => {
-                const bars = [];
-                let fixedToolTip = '';
-                let variableToolTip = '';
-                let totalChanged = 0;
+            iconChart.getFor(settingsStore.get('percentageLimit'), coinsBar, subTotalBar, totalBar, (buffer) => {
+                appIcon.setImage(buffer);
 
-                for (var coin in json.RAW) {
-                    if (json.RAW[coin]) {
-                        const baseColor = Colors.COIN[coin] || Colors.COIN.RANDOM;
-
-                        bars.push({
-                            value: json.RAW[coin].USD.CHANGEPCT24HOUR,
-                            color: {
-                                positive: baseColor,
-                                negaive: Theme.colorLuminance(baseColor, -0.5)
-                            }
-                        });
-                        // TODO: Think about a way to improve this
-                        variableToolTip += `${coin}:$${json.RAW[coin].USD.PRICE}(${json.RAW[coin].USD.CHANGEPCT24HOUR.toFixed(2)}%)\n`;
-                        totalChanged += json.RAW[coin].USD.CHANGEPCT24HOUR;
-                    }
-                }
-
-                const changeAvg = totalChanged / bars.length;
-                fixedToolTip += `Average: ${changeAvg.toFixed(2)}%\n`;
-                const subTotal = {
-                    value: changeAvg,
-                    color: {
-                        positive: Colors.SUBTOTAL.positive,
-                        negative: Colors.SUBTOTAL.negative
-                    }
-                };
-
-                let paidValue = 0;
-                let currentValue = 0;
-                uniqueCoins.forEach((value, key) => {
-                    if (json.RAW[key]) {
-                        paidValue += uniqueCoins.get(key).paid;
-                        currentValue += json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount;
-                    }
-                });
-
-                let profitLossPct = ((currentValue * 100) / paidValue) - 100;
-                let profitLoss = currentValue - paidValue;
-                fixedToolTip += `Profit/Loss: U$${profitLoss.toFixed(2)} (${profitLossPct.toFixed(2)}%)`;
-                const total = {
-                    value: profitLossPct,
-                    color: {
-                        positive: Colors.TOTAL.positive,
-                        negative: Colors.TOTAL.negative
-                    }
-                };
-
-                iconChart.getFor(settingsStore.get('percentageLimit'), subTotal, total, bars, (buffer) => {
-                    appIcon.setImage(buffer);
-                    appIcon.setToolTip(`${appNameSignature}\n${variableToolTip.substring(0, 127 - appNameSignature.length - 1 - fixedToolTip.length - 1)}\n${fixedToolTip}`);
-                });
-            })
-            .catch(err => console.error(err));
-    }
+                let tooltip = '';
+                if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
+                else tooltip = `${appNameSignature}\n${summaryToolTip}`;
+                appIcon.setToolTip(tooltip);
+            });
+        })
+        .catch(err => console.error(err));
 };
 
 const checkAutoStartup = (shouldStartup) => {

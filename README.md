@@ -1,5 +1,7 @@
 # ![Cryptocoin Watch](build/icons/20x20.png) Cryptocoin Watch - A small utility app to watch cryptocoin quote changes and your profits and losses.
 
+See [help](HELP.MD) for more information.
+
 ## Development
 
 ```sh
