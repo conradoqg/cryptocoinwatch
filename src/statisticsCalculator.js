@@ -27,13 +27,17 @@ class StatisticsCalculator {
                 .then(json => {
                     const coins = [];
 
+                    let changeTotal = 0;
                     let changePctTotal = 0;
                     let maxChangePctTotal = 0;
                     let minChangePctTotal = 0;
                     let paidTotal = 0;
-                    let valueTotal = 0;
+                    let priceTotal = 0;
                     let highTotal = 0;
                     let lowTotal = 0;
+                    let valueTotal = 0;
+                    let highValueTotal = 0;
+                    let lowValueTotal = 0;
 
                     uniqueCoins.forEach((value, key) => {
                         if (json.RAW[key]) {
@@ -48,29 +52,34 @@ class StatisticsCalculator {
                                 paid: uniqueCoins.get(key).paid,
                                 value: json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount
                             });
+                            changeTotal += json.RAW[key].USD.CHANGE24HOUR;
                             changePctTotal += json.RAW[key].USD.CHANGEPCT24HOUR;
                             maxChangePctTotal += ((json.RAW[key].USD.HIGH24HOUR * 100) / json.RAW[key].USD.OPEN24HOUR) - 100;
                             minChangePctTotal += ((json.RAW[key].USD.LOW24HOUR * 100) / json.RAW[key].USD.OPEN24HOUR) - 100;
                             paidTotal += uniqueCoins.get(key).paid;
+                            priceTotal += json.RAW[key].USD.PRICE;
+                            highTotal += json.RAW[key].USD.HIGH24HOUR;
+                            lowTotal += json.RAW[key].USD.LOW24HOUR;
                             valueTotal += json.RAW[key].USD.PRICE * uniqueCoins.get(key).amount;
-                            highTotal += json.RAW[key].USD.HIGH24HOUR * uniqueCoins.get(key).amount;
-                            lowTotal += json.RAW[key].USD.LOW24HOUR * uniqueCoins.get(key).amount;
+                            highValueTotal += json.RAW[key].USD.HIGH24HOUR * uniqueCoins.get(key).amount;
+                            lowValueTotal += json.RAW[key].USD.LOW24HOUR * uniqueCoins.get(key).amount;
                         }
                     });
 
                     const subTotal = {
-                        changePctAvg: changePctTotal / coins.length,
-                        maxChangePctAvg: maxChangePctTotal / coins.length,
-                        minChangePctAvg: minChangePctTotal / coins.length
+                        changeTotalPct: (changeTotal * 100) / priceTotal,
+                        changeTotal: changeTotal,
+                        maxChangePctAvg: ((highTotal-priceTotal) * 100) / priceTotal,
+                        minChangePctAvg: ((lowValueTotal-priceTotal) * 100) / priceTotal
                     };
 
                     const total = {
                         profitLossPct: ((valueTotal * 100) / paidTotal) - 100,
-                        maxProfitLossPct: ((highTotal * 100) / paidTotal) - 100,
-                        minProfitLossPct: ((lowTotal * 100) / paidTotal) - 100,
+                        maxProfitLossPct: ((highValueTotal * 100) / paidTotal) - 100,
+                        minProfitLossPct: ((lowValueTotal * 100) / paidTotal) - 100,
                         profitLoss: valueTotal - paidTotal,
-                        maxProfitLoss: highTotal - paidTotal,
-                        minProfitLoss: lowTotal - paidTotal,
+                        maxProfitLoss: highValueTotal - paidTotal,
+                        minProfitLoss: lowValueTotal - paidTotal,
                         valueTotal: valueTotal,
                         paidTotal: paidTotal
                     };

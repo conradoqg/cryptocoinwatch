@@ -16,7 +16,8 @@ Hovering mouse over the icon shows you the tooltip:
 Mode 1: The current price, 24-hour change and the total value for each coin that you have in your transaction list.
 - `COIN: U$<price> (<24HourChange>%) = U$<total>`
 
-Mode 2: How much did you pay and what's worth now.
+Mode 2: How much the coins value changed and how much did you pay and what's worth now.
+- `Change: U$<change> (<changePct>%)` 
 - `Profit/Loss: U$<currentValue> - U$<amountPaid> = U$<profit> (<profitLoss>%)`:
 
 Change modes by left-clicking it.

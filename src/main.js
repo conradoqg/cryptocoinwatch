@@ -93,7 +93,7 @@ const updateIcon = () => {
 
             let coinsBar = coins.map((item) => {
                 const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
-                coinToolTip += `${item.coin}: $${item.price} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
+                coinToolTip += `${item.coin}: $${item.price.toFixed(2)} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
                 return {
                     value: item.changePct24Hour,
                     max: settingsStore.get('percentageLimit.coin'),
@@ -105,9 +105,10 @@ const updateIcon = () => {
                 };
             });
 
+            summaryToolTip += `Change: \nU$${subTotal.changeTotal.toFixed(2)} (${subTotal.changeTotalPct.toFixed(2)}%)\n`;
             let subTotalBar = {
                 span: 2,
-                value: subTotal.changePctAvg,
+                value: subTotal.changeTotalPct,
                 max: settingsStore.get('percentageLimit.subTotal'),
                 min: -settingsStore.get('percentageLimit.subTotal'),
                 color: Theme.SUBTOTAL
