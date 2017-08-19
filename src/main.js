@@ -96,8 +96,8 @@ const updateIcon = () => {
                 coinToolTip += `${item.coin}: $${item.price} (${item.changePct24Hour.toFixed(2)}%) = U$${item.total.toFixed(2)}\n`;
                 return {
                     value: item.changePct24Hour,
-                    max: item.high24Hour,
-                    min: item.low24Hour,
+                    max: settingsStore.get('percentageLimit.coin'),
+                    min: -settingsStore.get('percentageLimit.coin'),
                     color: {
                         positive: coinColor,
                         negative: Theme.colorLuminance(coinColor, -0.5)
@@ -107,29 +107,32 @@ const updateIcon = () => {
 
             summaryToolTip += `Coin change: ${subTotal.changePctAvg.toFixed(2)}%\n`;
             let subTotalBar = {
+                span: 2,
                 value: subTotal.changePctAvg,
-                max: subTotal.maxChangePctAvg,
-                min: subTotal.minChangePctAvg,
+                max: settingsStore.get('percentageLimit.subTotal'),
+                min: -settingsStore.get('percentageLimit.subTotal'),
                 color: Theme.SUBTOTAL
             };
 
             summaryToolTip += `Paid/Current: U$${total.paidValue.toFixed(2)} - U$${total.currentValue.toFixed(2)}\n`;
             summaryToolTip += `Profit/Loss: U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
             let totalBar = {
+                span: 2,
                 value: total.profitLossPct,
-                max: total.maxProfitLossPct,
-                min: total.minProfitLossPct,
+                max: settingsStore.get('percentageLimit.total'),
+                min: -settingsStore.get('percentageLimit.total'),
                 color: Theme.TOTAL
             };
 
-            iconChart.getFor(settingsStore.get('percentageLimit'), coinsBar, subTotalBar, totalBar, (buffer) => {
-                appIcon.setImage(buffer);
+            iconChart.createIconFromBars([...coinsBar, subTotalBar, totalBar])
+                .then(icon => {
+                    appIcon.setImage(icon);
 
-                let tooltip = '';
-                if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
-                else tooltip = `${appNameSignature}\n${summaryToolTip}`;
-                appIcon.setToolTip(tooltip);
-            });
+                    let tooltip = '';
+                    if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
+                    else tooltip = `${appNameSignature}\n${summaryToolTip}`;
+                    appIcon.setToolTip(tooltip);
+                });
         })
         .catch(err => console.error(err));
 };
