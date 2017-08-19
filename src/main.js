@@ -93,7 +93,7 @@ const updateIcon = () => {
 
             let coinsBar = coins.map((item) => {
                 const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
-                coinToolTip += `${item.coin}: $${item.price} (${item.changePct24Hour.toFixed(2)}%) = U$${item.total.toFixed(2)}\n`;
+                coinToolTip += `${item.coin}: $${item.price} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
                 return {
                     value: item.changePct24Hour,
                     max: settingsStore.get('percentageLimit.coin'),
@@ -105,7 +105,6 @@ const updateIcon = () => {
                 };
             });
 
-            summaryToolTip += `Coin change: ${subTotal.changePctAvg.toFixed(2)}%\n`;
             let subTotalBar = {
                 span: 2,
                 value: subTotal.changePctAvg,
@@ -114,8 +113,7 @@ const updateIcon = () => {
                 color: Theme.SUBTOTAL
             };
 
-            summaryToolTip += `Paid/Current: U$${total.paidValue.toFixed(2)} - U$${total.currentValue.toFixed(2)}\n`;
-            summaryToolTip += `Profit/Loss: U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
+            summaryToolTip += `Profit/Loss: \nU$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
             let totalBar = {
                 span: 2,
                 value: total.profitLossPct,
