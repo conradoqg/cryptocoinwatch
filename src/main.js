@@ -34,7 +34,6 @@ const timer = new ManagedTimer(() => {
 
 // Application state
 const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
-let tooltipMode = 1;
 let statistics = null;
 
 app.on('ready', () => {
@@ -43,10 +42,11 @@ app.on('ready', () => {
     appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
     appIcon.setToolTip(appNameSignature);
     appIcon.setContextMenu(createContextMenu());
-    appIcon.on('click', () => {
-        tooltipMode = (tooltipMode == 1 ? 2 : 1);
-        updateUIState();
-    });
+    if (os.platform() != 'darwin') {
+        appIcon.on('click', () => {
+            return updateData().then(updateUIState);
+        });
+    }
     appIcon.on('double-click', () => shell.openExternal(settingsStore.get('website') || 'https://www.cryptocompare.com/'));
 
     checkAutoStartup(settingsStore.get('startWithOS'));
@@ -63,33 +63,62 @@ app.on('window-all-closed', () => {
 const createContextMenu = () => {
     let menuItems = [];
 
-    if (os.platform() == 'darwin') {
+    if (statistics) {
         menuItems.push({
             label: 'Coins',
-            type: 'radio',
-            checked: true,
-            click: () => {
-                tooltipMode = 1;
-                updateUIState();
-            }
+            submenu: []
         });
+
+        let lastMenu = menuItems[menuItems.length - 1].submenu;
+        for (var i = 0; i < statistics.coins.length; i++) {
+            const item = statistics.coins[i];
+            lastMenu.push({
+                label: `${item.coin}: $${item.price.toFixed(2)} * (${item.changePct24Hour.toFixed(2)}%) = $${item.change24Hour.toFixed(2)}`,
+                click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
+            });
+        }
 
         menuItems.push({
             label: 'Summary',
-            type: 'radio',
-            checked: false,
-            click: () => {
-                tooltipMode = 2;
-                updateUIState();
-            }
+            submenu: []
         });
 
-        menuItems.push({
-            type: 'separator',
+        lastMenu = menuItems[menuItems.length - 1].submenu;
+        for (var i = 0; i < statistics.coins.length; i++) {
+            const item = statistics.coins[i];
+            lastMenu.push({
+                label: `${item.coin}: $${item.price.toFixed(2)} * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)}`,
+                click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
+            });
+        }
+
+        lastMenu.push({
+            type: 'separator'
+        });
+
+        const subTotal = statistics.subTotal;
+        lastMenu.push({
+            label: `Change: ${subTotal.changeTotalPct.toFixed(2)}% = $${subTotal.changeTotal.toFixed(2)} `,
+            enabled: false
+        });
+
+        const total = statistics.total;
+        lastMenu.push({
+            label: `Profit/Loss: U$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`,
+            enabled: false
         });
     }
 
     menuItems = menuItems.concat([
+        {
+            type: 'separator'
+        },
+        {
+            label: 'Refresh',
+            click: () => {
+                return updateData().then(updateUIState);
+            }
+        },
         {
             label: 'Settings',
             click: () => shell.openItem(settingsStore.filePath)
@@ -123,12 +152,9 @@ const updateUIState = () => {
     console.log('Updating UI state...');
     if (statistics != null) {
         let { coins, subTotal, total } = statistics;
-        let coinToolTip = '';
-        let summaryToolTip = '';
 
         let coinsBar = coins.map((item) => {
             const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
-            coinToolTip += `${item.coin}: $${item.price.toFixed(2)} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
             return {
                 value: item.changePct24Hour,
                 max: settingsStore.get('percentageLimit.coin'),
@@ -140,7 +166,6 @@ const updateUIState = () => {
             };
         });
 
-        summaryToolTip += `Change: \nU$${subTotal.changeTotal.toFixed(2)} (${subTotal.changeTotalPct.toFixed(2)}%)\n`;
         let subTotalBar = {
             span: 2,
             value: subTotal.changeTotalPct,
@@ -149,7 +174,6 @@ const updateUIState = () => {
             color: Theme.SUBTOTAL
         };
 
-        summaryToolTip += `Profit/Loss: \nU$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
         let totalBar = {
             span: 2,
             value: total.profitLossPct,
@@ -162,11 +186,7 @@ const updateUIState = () => {
             .then(icon => {
                 console.log('UI state updated.');
                 appIcon.setImage(icon);
-
-                let tooltip = '';
-                if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
-                else tooltip = `${appNameSignature}\n${summaryToolTip}`;
-                appIcon.setToolTip(tooltip);
+                appIcon.setContextMenu(createContextMenu());
             });
     }
 };
