@@ -20,6 +20,6 @@ Mode 2: How much the coins value changed and how much did you pay and what's wor
 - `Change: U$<change> (<changePct>%)` 
 - `Profit/Loss: U$<currentValue> - U$<amountPaid> = U$<profit> (<profitLoss>%)`:
 
-Change modes by left-clicking it.
+Change modes by left-clicking it (on Windows) or by setting that in the context-menu (MacOs).
 
 _Double-click opens cryptocompare or the web-site designated in the settings._

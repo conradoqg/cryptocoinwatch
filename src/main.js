@@ -35,7 +35,7 @@ const timer = new ManagedTimer(() => {
 let tooltipMode = 1;
 
 app.on('ready', () => {
-    if (os.platform == 'darwin') app.dock.hide();
+    if (os.platform() == 'darwin') app.dock.hide();
 
     appIcon = new Tray(nativeImage.createFromPath(path.join(app.getAppPath(), 'build/icon.ico')));
     appIcon.setToolTip(appNameSignature);
@@ -58,7 +58,35 @@ app.on('window-all-closed', () => {
 });
 
 const createContextMenu = () => {
-    return Menu.buildFromTemplate([
+    let menuItems = [];
+    
+    if (os.platform() == 'darwin') {
+        menuItems.push({
+            label: 'Coins',
+            type: 'radio',
+            checked: true,
+            click: () => {
+                tooltipMode = 1;
+                updateIcon();
+            }
+        });
+
+        menuItems.push({
+            label: 'Summary',
+            type: 'radio',
+            checked: false,
+            click: () => {
+                tooltipMode = 2;
+                updateIcon();
+            }
+        });
+
+        menuItems.push({
+            type: 'separator',
+        });
+    }
+
+    menuItems = menuItems.concat([
         {
             label: 'Settings',
             click: () => shell.openItem(settingsStore.filePath)
@@ -75,6 +103,8 @@ const createContextMenu = () => {
             click: () => app.quit()
         }
     ]);
+
+    return Menu.buildFromTemplate(menuItems);
 };
 
 const validInterval = (interval) => Math.max(interval * 1000, 10000);
