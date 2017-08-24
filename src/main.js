@@ -21,7 +21,6 @@ if (env !== 'production') {
 console.log(`Environment: ${env}`);
 
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
-const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
 
 let appIcon = null;
 const iconChart = new IconChart();
@@ -29,10 +28,14 @@ const appAutoLauncher = new AutoLaunch({
     name: app.getName()
 });
 const timer = new ManagedTimer(() => {
-    console.log('Updating icon');
-    return updateIcon();
+    console.log('Tick');
+    return updateData().then(updateUIState);
 });
+
+// Application state
+const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
 let tooltipMode = 1;
+let statistics = null;
 
 app.on('ready', () => {
     if (os.platform() == 'darwin') app.dock.hide();
@@ -42,7 +45,7 @@ app.on('ready', () => {
     appIcon.setContextMenu(createContextMenu());
     appIcon.on('click', () => {
         tooltipMode = (tooltipMode == 1 ? 2 : 1);
-        updateIcon();
+        updateUIState();
     });
     appIcon.on('double-click', () => shell.openExternal(settingsStore.get('website') || 'https://www.cryptocompare.com/'));
 
@@ -59,7 +62,7 @@ app.on('window-all-closed', () => {
 
 const createContextMenu = () => {
     let menuItems = [];
-    
+
     if (os.platform() == 'darwin') {
         menuItems.push({
             label: 'Coins',
@@ -67,7 +70,7 @@ const createContextMenu = () => {
             checked: true,
             click: () => {
                 tooltipMode = 1;
-                updateIcon();
+                updateUIState();
             }
         });
 
@@ -77,7 +80,7 @@ const createContextMenu = () => {
             checked: false,
             click: () => {
                 tooltipMode = 2;
-                updateIcon();
+                updateUIState();
             }
         });
 
@@ -110,58 +113,70 @@ const createContextMenu = () => {
 const validInterval = (interval) => Math.max(interval * 1000, 10000);
 
 const updateState = () => {
-    console.log('Settings changed');
+    console.log('Updating state...');
     timer.start(validInterval(settingsStore.get('interval')));
     checkAutoStartup(settingsStore.get('startWithOS'));
+    console.log('State updated.');
 };
 
-const updateIcon = () => {
-    StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
-        .then(({ coins, subTotal, total }) => {
-            let summaryToolTip = '';
-            let coinToolTip = '';
+const updateUIState = () => {
+    console.log('Updating UI state...');
+    if (statistics != null) {
+        let { coins, subTotal, total } = statistics;
+        let coinToolTip = '';
+        let summaryToolTip = '';
 
-            let coinsBar = coins.map((item) => {
-                const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
-                coinToolTip += `${item.coin}: $${item.price.toFixed(2)} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
-                return {
-                    value: item.changePct24Hour,
-                    max: settingsStore.get('percentageLimit.coin'),
-                    min: -settingsStore.get('percentageLimit.coin'),
-                    color: {
-                        positive: coinColor,
-                        negative: Theme.colorLuminance(coinColor, -0.5)
-                    }
-                };
+        let coinsBar = coins.map((item) => {
+            const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
+            coinToolTip += `${item.coin}: $${item.price.toFixed(2)} (${item.changePct24Hour.toFixed(2)}%) = U$${item.value.toFixed(2)}\n`;
+            return {
+                value: item.changePct24Hour,
+                max: settingsStore.get('percentageLimit.coin'),
+                min: -settingsStore.get('percentageLimit.coin'),
+                color: {
+                    positive: coinColor,
+                    negative: Theme.colorLuminance(coinColor, -0.5)
+                }
+            };
+        });
+
+        summaryToolTip += `Change: \nU$${subTotal.changeTotal.toFixed(2)} (${subTotal.changeTotalPct.toFixed(2)}%)\n`;
+        let subTotalBar = {
+            span: 2,
+            value: subTotal.changeTotalPct,
+            max: settingsStore.get('percentageLimit.subTotal'),
+            min: -settingsStore.get('percentageLimit.subTotal'),
+            color: Theme.SUBTOTAL
+        };
+
+        summaryToolTip += `Profit/Loss: \nU$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
+        let totalBar = {
+            span: 2,
+            value: total.profitLossPct,
+            max: settingsStore.get('percentageLimit.total'),
+            min: -settingsStore.get('percentageLimit.total'),
+            color: Theme.TOTAL
+        };
+
+        return iconChart.createIconFromBars([...coinsBar, subTotalBar, totalBar])
+            .then(icon => {
+                console.log('UI state updated.');
+                appIcon.setImage(icon);
+
+                let tooltip = '';
+                if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
+                else tooltip = `${appNameSignature}\n${summaryToolTip}`;
+                appIcon.setToolTip(tooltip);
             });
+    }
+};
 
-            summaryToolTip += `Change: \nU$${subTotal.changeTotal.toFixed(2)} (${subTotal.changeTotalPct.toFixed(2)}%)\n`;
-            let subTotalBar = {
-                span: 2,
-                value: subTotal.changeTotalPct,
-                max: settingsStore.get('percentageLimit.subTotal'),
-                min: -settingsStore.get('percentageLimit.subTotal'),
-                color: Theme.SUBTOTAL
-            };
-
-            summaryToolTip += `Profit/Loss: \nU$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`;
-            let totalBar = {
-                span: 2,
-                value: total.profitLossPct,
-                max: settingsStore.get('percentageLimit.total'),
-                min: -settingsStore.get('percentageLimit.total'),
-                color: Theme.TOTAL
-            };
-
-            iconChart.createIconFromBars([...coinsBar, subTotalBar, totalBar])
-                .then(icon => {
-                    appIcon.setImage(icon);
-
-                    let tooltip = '';
-                    if (tooltipMode == 1) tooltip = `${appNameSignature}\n${coinToolTip}`;
-                    else tooltip = `${appNameSignature}\n${summaryToolTip}`;
-                    appIcon.setToolTip(tooltip);
-                });
+const updateData = () => {
+    console.log('Updating data...');
+    return StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
+        .then((newStatistics) => {
+            console.log('Data updated.');
+            statistics = newStatistics;
         })
         .catch(err => console.error(err));
 };

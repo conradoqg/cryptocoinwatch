@@ -1,3 +1,4 @@
+//TODO: This should extend EventEmitter
 class ManagedTimer {
     constructor(fn) {
         this.fn = fn;
