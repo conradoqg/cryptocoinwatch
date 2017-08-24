@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 class StatisticsCalculator {
-    static type1(transactions, market) {
+    static type1(transactions, transfers, market) {
         const uniqueCoins = new Map();
 
         for (var i = 0; i < transactions.length; i++) {
@@ -14,7 +14,7 @@ class StatisticsCalculator {
             } else {
                 coin = uniqueCoins.get(transactions[i].coin);
             }
-            
+
             const operation = transactions[i].operation || 'buy';
 
             if (operation == 'buy') {
@@ -28,12 +28,35 @@ class StatisticsCalculator {
             uniqueCoins.set(transactions[i].coin, coin);
         }
 
+        for (var i = 0; i < transfers.length; i++) {            
+            let coin = null;
+            let transfer = transfers[i];
+            if (!uniqueCoins.has(transfer.coin)) {
+                coin = {
+                    amount: 0,
+                    paid: 0
+                }
+            } else {
+                coin = uniqueCoins.get(transfer.coin);
+            }
+
+            if (transfers[i].from == 'me')
+                coin.amount -= transfer.amount + transfer.fee;
+            if (transfers[i].to == 'me')
+                coin.amount += transfer.amount;            
+            uniqueCoins.set(transfer.coin, coin);
+        }
+
         if (uniqueCoins.size > 0) {
             let coinsParam = Array.from(uniqueCoins.keys()).join(',');
 
             return fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinsParam}&tsyms=USD&e=${market}&extraParams=cryptowatch`)
-                .then(res => res.json())
+                .then((res) => {
+                    return res.json()
+                })
                 .then(json => {
+                    if (json.Response && json.Response == 'Error') throw new Error(json.Message);
+                    
                     const coins = [];
 
                     let changeTotal = 0;

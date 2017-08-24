@@ -86,7 +86,7 @@ const updateState = () => {
 };
 
 const updateIcon = () => {
-    StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('market'))
+    StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
         .then(({ coins, subTotal, total }) => {
             let summaryToolTip = '';
             let coinToolTip = '';
