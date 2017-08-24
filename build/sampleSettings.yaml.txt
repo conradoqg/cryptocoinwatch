@@ -11,51 +11,61 @@ market: Coinbase                        # Which market should the price based on
 website: https://www.cryptocompare.com/ # Which website should be open when you double-click the icon
 transactions:                           # List of transactions
 - coin: BTC                             # Coin Symbol
+  operation: buy                        # Which operation was done (sell or buy)
   amount: 0.00416396                    # Amount
   date: 2017-07-12                      # Date of the transaction
   price: 2401.56                        # Price paid
   fee: 0.99                             # Paid fee or zero
 - coin: ETH
+  operation: buy
   amount: 0.10043148
   date: 2017-07-14
   price: 199.14
   fee: 1.49
 - coin: BTC
+  operation: buy
   amount: 0.0741627
   date: 2017-07-25
   price: 2593.35
   fee: 7.67
 - coin: ETH
+  operation: buy
   amount: 0.47523152
   date: 2017-07-28
   price: 192.22
   fee: 3.65
 - coin: ETH
+  operation: sell
   amount: 0.2569805
   date: 2017-07-30
   price: 198.5
   fee: 2.99
 - coin: LTC
+  operation buy
   amount: 1
   date: 2017-08-07
   price: 46.4
   fee: 1.99
 - coin: ETH
+  operation: buy
   amount: 0.267
   date: 2017-08-07
   price: 271.72
   fee: 2.99
 - coin: BTC
+  operation: sell
   amount: 0.03868292
   date: 2017-08-08
   price: 3380.82
   fee: 5.22
 - coin: ETH
+  operation: sell
   amount: 1.00016769
   date: 2017-08-11
   price: 316.95
   fee: 4.72
 - coin: BTC
+  operation: buy
   amount: 0.07842993
   date: 2017-08-12
   price: 3825.07

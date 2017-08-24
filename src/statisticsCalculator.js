@@ -5,18 +5,27 @@ class StatisticsCalculator {
         const uniqueCoins = new Map();
 
         for (var i = 0; i < transactions.length; i++) {
+            let coin = null;
             if (!uniqueCoins.has(transactions[i].coin)) {
-                uniqueCoins.set(transactions[i].coin, {
-                    amount: transactions[i].amount,
-                    paid: (transactions[i].price * transactions[i].amount) + transactions[i].fee
-                });
+                coin = {
+                    amount: 0,
+                    paid: 0
+                };
             } else {
-                const coin = uniqueCoins.get(transactions[i].coin);
+                coin = uniqueCoins.get(transactions[i].coin);
+            }
+            
+            const operation = transactions[i].operation || 'buy';
+
+            if (operation == 'buy') {
                 coin.amount += transactions[i].amount;
                 coin.paid += (transactions[i].price * transactions[i].amount) + transactions[i].fee;
-
-                uniqueCoins.set(transactions[i].coin, coin);
+            } else {
+                coin.amount -= transactions[i].amount;
+                coin.paid -= (transactions[i].price * transactions[i].amount) + transactions[i].fee;
             }
+
+            uniqueCoins.set(transactions[i].coin, coin);
         }
 
         if (uniqueCoins.size > 0) {
@@ -69,8 +78,8 @@ class StatisticsCalculator {
                     const subTotal = {
                         changeTotalPct: (changeTotal * 100) / priceTotal,
                         changeTotal: changeTotal,
-                        maxChangePctAvg: ((highTotal-priceTotal) * 100) / priceTotal,
-                        minChangePctAvg: ((lowValueTotal-priceTotal) * 100) / priceTotal
+                        maxChangePctAvg: ((highTotal - priceTotal) * 100) / priceTotal,
+                        minChangePctAvg: ((lowValueTotal - priceTotal) * 100) / priceTotal
                     };
 
                     const total = {
