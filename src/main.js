@@ -18,19 +18,16 @@ console.log('Initializing...');
 if (env !== 'production') {
     app.setPath('userData', `${app.getPath('userData')} (${env})`);
 }
+
 console.log(`Environment: ${env}`);
 
 const appNameSignature = `${app.getName()} v${app.getVersion()}`;
 
+// Controls
 let appIcon = null;
 const iconChart = new IconChart();
-const appAutoLauncher = new AutoLaunch({
-    name: app.getName()
-});
-const timer = new ManagedTimer(() => {
-    console.log('Tick');
-    return updateData().then(updateUIState);
-});
+const appAutoLauncher = new AutoLaunch({ name: app.getName() });
+const timer = new ManagedTimer();
 
 // Application state
 const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
@@ -51,8 +48,16 @@ app.on('ready', () => {
 
     checkAutoStartup(settingsStore.get('startWithOS'));
 
-    updateState();
     settingsStore.on('changed', () => updateState());
+    timer.on('tick', (sucess) => {
+        console.log('Tick');
+        return updateData()
+            .then(updateUIState)
+            .then(sucess)
+            .catch(console.error);
+
+    });
+    updateState();
 });
 
 app.on('window-all-closed', () => {
@@ -104,7 +109,7 @@ const createContextMenu = () => {
 
         const total = statistics.total;
         lastMenu.push({
-            label: `Profit/Loss: U$${total.valueTotal.toFixed(2)} - U$${total.paidTotal.toFixed(2)} = U$${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`,
+            label: `Profit/Loss: $${total.valueTotal.toFixed(2)} - $${total.paidTotal.toFixed(2)} = $${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`,
             enabled: false
         });
     }
@@ -197,8 +202,7 @@ const updateData = () => {
         .then((newStatistics) => {
             console.log('Data updated.');
             statistics = newStatistics;
-        })
-        .catch(err => console.error(err));
+        });
 };
 
 const checkAutoStartup = (shouldStartup) => {

@@ -1,7 +1,8 @@
-//TODO: This should extend EventEmitter
-class ManagedTimer {
-    constructor(fn) {
-        this.fn = fn;
+const EventEmitter = require('events').EventEmitter;
+
+class ManagedTimer extends EventEmitter {
+    constructor() {
+        super();
         this.lastExecution = null;
     }
 
@@ -22,7 +23,11 @@ class ManagedTimer {
         this.checkerTimer = setInterval(() => {
             try {
                 if (this.lastExecution != null) {
-                    if (Date.now() - this.lastExecution > this.ms + 1000) return this.run();
+                    if (Date.now() - this.lastExecution > this.ms + 1000) {
+                        return this.run();
+                    }
+                } else {
+                    return this.run();
                 }
             } catch (ex) {
                 console.error(ex);
@@ -39,8 +44,11 @@ class ManagedTimer {
     }
 
     run() {
+        return this.emit('tick', this.sucess.bind(this));
+    }
+
+    sucess() {
         this.lastExecution = Date.now();
-        return this.fn();
     }
 }
 
