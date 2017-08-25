@@ -2,24 +2,23 @@
 
 ## Bars
 
-- Middle-left:
+- Middle-left: (up to 8 bars)
     - A bar for each coin
 - Middle-right:
     - Two bars:
         - First: Coin change percentage
         - Second: Profit/Loss
 
-## ToolTip
+## Context-menu
 
-Hovering mouse over the icon shows you the tooltip:
+- **Coins**: The current price, 24-hour change and the total value for each coin that you have in your transaction list.
+    - `COIN: $<price> * (<24HourChange>%) = $<24HourChangeValue>`
+- **Summary**: How much the coins' value changed and how much did you pay and what's worth now.
+    - `COIN: $<prive> * <coinAmount> = $<totalValue>`
+    - `---------------------------------------------`
+    - `Change: $<change> (<changePct>%)` 
+    - `Profit/Loss: $<currentValue> - $<amountPaid> = $<profit> (<profitLoss>%)`:
 
-Mode 1: The current price, 24-hour change and the total value for each coin that you have in your transaction list.
-- `COIN: U$<price> (<24HourChange>%) = U$<total>`
-
-Mode 2: How much the coins value changed and how much did you pay and what's worth now.
-- `Change: U$<change> (<changePct>%)` 
-- `Profit/Loss: U$<currentValue> - U$<amountPaid> = U$<profit> (<profitLoss>%)`:
-
-Change modes by left-clicking it (on Windows) or by setting that in the context-menu (MacOs).
+_Click open coin's page in cryptocompare._
 
 _Double-click opens cryptocompare or the web-site designated in the settings._
