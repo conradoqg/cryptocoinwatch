@@ -2,7 +2,13 @@ const PImage = require('pureimage');
 const stream = require('stream');
 const nativeImage = require('electron').nativeImage;
 
+/**
+ * Generates a bar chart icon
+ */
 class IconChart {
+    /**
+     * Constructor
+     */
     constructor() {
         this.pImage = PImage.make(16, 16);
         this.context = this.pImage.getContext('2d');
@@ -12,6 +18,11 @@ class IconChart {
         this.minBarWidth = 2;
     }
 
+    /**
+     * Create a NativeImage of the icon chart.
+     * @param {Array} bars Data to build the bars.
+     * @returns Promise with the NativeImage as the first param
+     */
     createIconFromBars(bars) {
         const isPositive = (value) => (value >= 0);
         const normalizeValue = (value, max, min) => 2 * ((value - min) / (max - min)) - 1;
@@ -52,6 +63,11 @@ class IconChart {
         return this.getNativeImageFromPureImage(this.pImage);
     }
 
+    /**
+     * Convert a pure image data to a NativeImage
+     * @param {Object} pImage
+     * @returns Promise with the NativeImage as the first param
+     */
     getNativeImageFromPureImage(pImage) {
         return new Promise((resolve, reject) => {
             let data = [];

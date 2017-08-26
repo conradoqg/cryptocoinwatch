@@ -5,7 +5,14 @@ const yaml = require('js-yaml');
 const objectPath = require('object-path');
 const EventEmitter = require('events').EventEmitter;
 
+/**
+ * Settings store
+ */
 class SettingsStore extends EventEmitter {
+    /**
+     * Constructs the Settings Store that uses the filePath as the YAML storage
+     * @param {String} filePath Path to read the data from
+     */
     constructor(filePath) {
         super();
         this.watcher = null;
@@ -15,6 +22,9 @@ class SettingsStore extends EventEmitter {
         this.startFileMonitor();
     }
 
+    /**
+     * Load the data if necessary. If the settings file doesn't exist, creates it based on a sample settings file.
+     */
     load() {
         if (this.loadNecessary) {
             if (!fs.existsSync(this.filePath)) fs.writeFileSync(this.filePath, fs.readFileSync(path.join(app.getAppPath(), 'build/sampleSettings.yaml.txt')));
@@ -23,11 +33,19 @@ class SettingsStore extends EventEmitter {
         }
     }
 
+    /**
+     * Get a settings property given a path. Based on object-path module.
+     * @param {String} objPath
+     * @returns The data from the given property path
+     */
     get(objPath) {
         this.load();
         return objectPath.get(this.data, objPath);
     }
 
+    /**
+     * Monitor changes on settings file, if it happens, mark the store to be reload.
+     */
     startFileMonitor() {
         let fsTimeout = null;
 

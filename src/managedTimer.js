@@ -1,11 +1,18 @@
 const EventEmitter = require('events').EventEmitter;
 
+/**
+ * Managed timer that keeps itself on check and guarantee that the timer is executed even after a sleep.
+ */
 class ManagedTimer extends EventEmitter {
     constructor() {
         super();
         this.lastExecution = null;
     }
 
+    /**
+     * Starts or restart the timer
+     * @param {Integer} ms Value in milliseconds
+     */
     start(ms) {
         if (ms != null) {
             this.ms = ms;
@@ -37,17 +44,26 @@ class ManagedTimer extends EventEmitter {
         this.run();
     }
 
+    /**
+     * Stop the timer
+     */
     stop() {
         if (this.intervalTimer) clearInterval(this.intervalTimer);
         if (this.checkerTimer) clearInterval(this.checkerTimer);
         this.lastExecution = null;
     }
 
+    /**
+     * Run the timer tick
+     */
     run() {
-        return this.emit('tick', this.sucess.bind(this));
+        return this.emit('tick', this.success.bind(this));
     }
 
-    sucess() {
+    /**
+     * Inform the successfull run of a tick
+     */
+    success() {
         this.lastExecution = Date.now();
     }
 }

@@ -11,7 +11,7 @@ const AutoLaunch = require('auto-launch');
 const SettingsStore = require('./settingsStore');
 const ManagedTimer = require('./managedTimer');
 const env = process.env.ENV || 'production';
-const StatisticsCalculator = require('./statisticsCalculator');
+const statisticsCalculator = require('./statisticsCalculator');
 
 console.log('Initializing...');
 
@@ -49,11 +49,11 @@ app.on('ready', () => {
     checkAutoStartup(settingsStore.get('startWithOS'));
 
     settingsStore.on('changed', () => updateState());
-    timer.on('tick', (sucess) => {
+    timer.on('tick', (success) => {
         console.log('Tick');
         return updateData()
             .then(updateUIState)
-            .then(sucess)
+            .then(success)
             .catch(console.error);
 
     });
@@ -65,6 +65,9 @@ app.on('window-all-closed', () => {
     app.quit();
 });
 
+/**
+ * Create the context menu, if the data is avaiable, add specific menus that shows the statistics.
+ */
 const createContextMenu = () => {
     let menuItems = [];
 
@@ -121,7 +124,9 @@ const createContextMenu = () => {
         {
             label: 'Refresh',
             click: () => {
-                return updateData().then(updateUIState);
+                return updateData()
+                .then(updateUIState)
+                .catch(console.error);
             }
         },
         {
@@ -144,8 +149,9 @@ const createContextMenu = () => {
     return Menu.buildFromTemplate(menuItems);
 };
 
-const validInterval = (interval) => Math.max(interval * 1000, 10000);
-
+/**
+ * Every change on the settings file will restart the timer and check if the startup is correctly configured.
+ */
 const updateState = () => {
     console.log('Updating state...');
     timer.start(validInterval(settingsStore.get('interval')));
@@ -153,6 +159,9 @@ const updateState = () => {
     console.log('State updated.');
 };
 
+/**
+ * Updates the UI state, including the icon and the context-menu.
+ */
 const updateUIState = () => {
     console.log('Updating UI state...');
     if (statistics != null) {
@@ -196,15 +205,28 @@ const updateUIState = () => {
     }
 };
 
+/**
+ * Get updated data from the source.
+ */
 const updateData = () => {
     console.log('Updating data...');
-    return StatisticsCalculator.type1(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
+    return statisticsCalculator(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
         .then((newStatistics) => {
             console.log('Data updated.');
             statistics = newStatistics;
         });
 };
 
+/**
+ * Guarantee that the interval has a minimum of 10 seconds.
+ * @param {String} interval The interval to check
+ */
+const validInterval = (interval) => Math.max(interval * 1000, 10000);
+
+/**
+ * Check if the startup is configured according the settings.
+ * @param {String} shouldStartup If it should configure the program to start
+ */
 const checkAutoStartup = (shouldStartup) => {
     console.log('Checking startup');
     appAutoLauncher.isEnabled()
