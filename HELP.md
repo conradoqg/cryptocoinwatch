@@ -11,14 +11,68 @@
 
 ## Context-menu
 
-- **Coins**: The current price, 24-hour change and the total value for each coin that you have in your transaction list.
-    - `COIN: $<price> * (<24HourChange>%) = $<24HourChangeValue>`
-- **Summary**: How much the coins' value changed and how much did you pay and what's worth now.
-    - `COIN: $<prive> * <coinAmount> = $<totalValue>`
+- **Coins**: The current price, 24-hour change and the total value for each coin that you have in your transaction list. How much the coins' value changed and how much did you pay and what's worth now.
+    - `COIN: $<price> (* <24HourChange>% = $<24HourChange>) * <coinAmount> = $<currentValue> - $<amountPaid> = $<profitLoss> (<profitLoss>%)`
     - `---------------------------------------------`
     - `Change: $<change> (<changePct>%)` 
     - `Profit/Loss: $<currentValue> - $<amountPaid> = $<profit> (<profitLoss>%)`:
+- **Wallets**:
+    - `<walletName>`
+        - `COIN: $<price> * <coinAmount> = $<totalValue>`
+    
 
 _Click open coin's page in cryptocompare._
 
 _Double-click opens cryptocompare or the web-site designated in the settings._
+
+## Settings
+
+```yaml
+# Settings
+# Every change made in this file will automatically update the application
+
+startWithOS: true                       # Should it start with your OS?
+interval: 60                            # How many seconds between each update? (minimum of 10 seconds)
+percentageLimit:                        # A full bar in the tray icon would reflect wich percentage?
+  coin: 10                              # When the coin price reaches that value the bar will be full (Left half of the tray icon)
+  subTotal: 10                          # When the average percentage of the last 24-hour coin price variance reaches that value the bar will be full (First bar of the right side of the tray icon)
+  total: 20                             # When the profit/loss percentage reaches that value the bar will be full (Second bar of the right side of the tray icon)
+market: Coinbase                        # Which market should the price based on? (For the full list of available markets, check this link: https://www.cryptocompare.com/api/#introduction)
+website: https://www.cryptocompare.com/ # Which website should be open when you double-click the icon
+transactions:                           # List of transactions (Required)
+- coin: BTC                             # Coin Symbol (Must be available in USD) (Required)
+  wallet: MyWallet                      # Wallet name (Required)
+  operation: buy                        # Which operation was done: sell or buy (Default: buy)
+  amount: 1                             # Amount (Coin) (Required)
+  date: 2017-07-12                      # Date of the transaction
+  price: 2500                           # Price (U$) paid (Required)
+  fee: 1                                # Fee (U$) paid or zero (Required)
+- coin: ETH
+  wallet: MyWallet
+  operation: buy
+  amount: 1
+  date: 2017-07-14
+  price: 2
+  fee: 0.5
+- coin: BTC
+  wallet: MyWallet
+  operation: sell
+  amount: 0.5
+  date: 2017-07-25
+  price: 2500
+  fee: 1
+transfers:                              # List of transfers
+- coin: ETH                             # Coin Symbol (Must be available in USD) (Required)
+  wallet: NewWallet                     # Wallet name (Required)
+  from: me                              # From me or from someone (Required)
+  to: me                                # To me or from someone (Required)
+  amount: 1                             # Amount (Coin) (Required)
+  date: 2017-07-14                      # Date of the transfer
+  fee: 0.5                              # Fee (Coin) paid or zero (Not necessary when it comes from someone)
+- coin: LTC
+  wallet: NewWallet
+  from: someone
+  to: me
+  amount: 1
+  date: 2017-07-14
+```

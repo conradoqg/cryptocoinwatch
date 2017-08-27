@@ -9,33 +9,38 @@ percentageLimit:                        # A full bar in the tray icon would refl
   total: 20                             # When the profit/loss percentage reaches that value the bar will be full (Second bar of the right side of the tray icon)
 market: Coinbase                        # Which market should the price based on? (For the full list of available markets, check this link: https://www.cryptocompare.com/api/#introduction)
 website: https://www.cryptocompare.com/ # Which website should be open when you double-click the icon
-transactions:                           # List of transactions
-- coin: BTC                             # Coin Symbol (Must be available in USD)
-  operation: buy                        # Which operation was done (sell or buy)
-  amount: 1                             # Amount (Coin)
+transactions:                           # List of transactions (Required)
+- coin: BTC                             # Coin Symbol (Must be available in USD) (Required)
+  wallet: MyWallet                      # Wallet name (Required)
+  operation: buy                        # Which operation was done: sell or buy (Default: buy)
+  amount: 1                             # Amount (Coin) (Required)
   date: 2017-07-12                      # Date of the transaction
-  price: 2500                           # Price (U$) paid
-  fee: 1                                # Fee (U$) paid or zero
+  price: 2500                           # Price (U$) paid (Required)
+  fee: 1                                # Fee (U$) paid or zero (Required)
 - coin: ETH
+  wallet: MyWallet
   operation: buy
   amount: 1
   date: 2017-07-14
   price: 2
   fee: 0.5
 - coin: BTC
+  wallet: MyWallet
   operation: sell
   amount: 0.5
   date: 2017-07-25
   price: 2500
   fee: 1
-transfers:                              # List of transfers            	  
-- coin: ETH                             # Coin Symbol (Must be available in USD)
-  from: me                              # From me or someone
-  to: me                                # To me or someone
-  amount: 1                             # Amount (Coin)
+transfers:                              # List of transfers
+- coin: ETH                             # Coin Symbol (Must be available in USD) (Required)
+  wallet: NewWallet                     # Wallet name (Required)
+  from: me                              # From me or from someone (Required)
+  to: me                                # To me or from someone (Required)
+  amount: 1                             # Amount (Coin) (Required)
   date: 2017-07-14                      # Date of the transfer
   fee: 0.5                              # Fee (Coin) paid or zero (Not necessary when it comes from someone)
 - coin: LTC
+  wallet: NewWallet
   from: someone
   to: me
   amount: 1
