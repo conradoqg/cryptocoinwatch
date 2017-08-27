@@ -70,6 +70,9 @@ app.on('window-all-closed', () => {
  */
 const createContextMenu = () => {
     let menuItems = [];
+    let lastMenu = null;
+
+    const last = (array) => array[array.length - 1];
 
     if (statistics) {
         menuItems.push({
@@ -77,25 +80,11 @@ const createContextMenu = () => {
             submenu: []
         });
 
-        let lastMenu = menuItems[menuItems.length - 1].submenu;
+        lastMenu = last(menuItems).submenu;
         for (var i = 0; i < statistics.coins.length; i++) {
             const item = statistics.coins[i];
             lastMenu.push({
-                label: `${item.coin}: $${item.price.toFixed(2)} * (${item.changePct24Hour.toFixed(2)}%) = $${item.change24Hour.toFixed(2)}`,
-                click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
-            });
-        }
-
-        menuItems.push({
-            label: 'Summary',
-            submenu: []
-        });
-
-        lastMenu = menuItems[menuItems.length - 1].submenu;
-        for (var i = 0; i < statistics.coins.length; i++) {
-            const item = statistics.coins[i];
-            lastMenu.push({
-                label: `${item.coin}: $${item.price.toFixed(2)} * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)}`,
+                label: `${item.coin}: $${item.price.toFixed(2)} ( * ${item.changePct24Hour.toFixed(2)}% = $${item.change24Hour.toFixed(2)}) * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)} - $${item.paid.toFixed(2)} = $${item.profitLoss.toFixed(2)} (${item.profitLossPct.toFixed(2)}%)`,
                 click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
             });
         }
@@ -115,6 +104,29 @@ const createContextMenu = () => {
             label: `Profit/Loss: $${total.valueTotal.toFixed(2)} - $${total.paidTotal.toFixed(2)} = $${total.profitLoss.toFixed(2)} (${total.profitLossPct.toFixed(2)}%)`,
             enabled: false
         });
+
+        menuItems.push({
+            label: 'Wallets',
+            submenu: []
+        });
+
+        lastMenu = last(menuItems).submenu;
+        for (var i = 0; i < statistics.wallets.length; i++) {
+            const wallet = statistics.wallets[i];
+            lastMenu.push({
+                label: wallet.wallet,
+                submenu: []
+            });
+
+            let lastSubMenu = last(lastMenu).submenu;
+
+            for (var x = 0; x < wallet.coins.length; x++) {
+                const walletCoin = wallet.coins[x];
+                lastSubMenu.push({
+                    label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
+                });
+            }
+        }
     }
 
     menuItems = menuItems.concat([
@@ -125,8 +137,8 @@ const createContextMenu = () => {
             label: 'Refresh',
             click: () => {
                 return updateData()
-                .then(updateUIState)
-                .catch(console.error);
+                    .then(updateUIState)
+                    .catch(console.error);
             }
         },
         {
