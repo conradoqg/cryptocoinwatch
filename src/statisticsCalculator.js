@@ -12,27 +12,28 @@ const statisticsCalculator = (transactions, transfers, market) => {
 
     if (transactions) {
         for (var i = 0; i < transactions.length; i++) {
+            const transaction = transactions[i];
             let coin = null;
-            if (!uniqueCoins.has(transactions[i].coin)) {
+            if (!uniqueCoins.has(transaction.coin)) {
                 coin = {
                     amount: 0,
                     paid: 0
                 };
             } else {
-                coin = uniqueCoins.get(transactions[i].coin);
+                coin = uniqueCoins.get(transaction.coin);
             }
 
-            const operation = transactions[i].operation || 'buy';
+            const operation = transaction.operation || 'buy';
 
             if (operation == 'buy') {
-                coin.amount += transactions[i].amount;
-                coin.paid += (transactions[i].price * transactions[i].amount) + transactions[i].fee;
+                coin.amount += transaction.amount;
+                coin.paid += (transaction.price * transaction.amount) + transaction.fee;
             } else {
-                coin.amount -= transactions[i].amount;
-                coin.paid -= (transactions[i].price * transactions[i].amount) + transactions[i].fee;
+                coin.amount -= transaction.amount;
+                coin.paid -= (transaction.price * transaction.amount) + transaction.fee;
             }
 
-            uniqueCoins.set(transactions[i].coin, coin);
+            uniqueCoins.set(transaction.coin, coin);
         }
     }
 
@@ -49,8 +50,10 @@ const statisticsCalculator = (transactions, transfers, market) => {
                 coin = uniqueCoins.get(transfer.coin);
             }
 
+            const fee = transfer.fee ? transfer.fee : 0;
+
             if (transfers[i].from == 'me')
-                coin.amount -= transfer.amount + transfer.fee;
+                coin.amount -= transfer.amount + fee;
             if (transfers[i].to == 'me')
                 coin.amount += transfer.amount;
             uniqueCoins.set(transfer.coin, coin);
