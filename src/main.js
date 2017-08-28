@@ -192,6 +192,8 @@ const updateUIState = () => {
             };
         });
 
+        coinsBar = coinsBar.slice(0,4);
+
         let subTotalBar = {
             span: 2,
             value: subTotal.changeTotalPct,
