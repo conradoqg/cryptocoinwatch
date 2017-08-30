@@ -83,10 +83,12 @@ const createContextMenu = () => {
         lastMenu = last(menuItems).submenu;
         for (var i = 0; i < statistics.coins.length; i++) {
             const item = statistics.coins[i];
-            lastMenu.push({
-                label: `${item.coin}: $${item.price.toFixed(2)} ( * ${item.changePct24Hour.toFixed(2)}% = $${item.change24Hour.toFixed(2)}) * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)} - $${item.paid.toFixed(2)} = $${item.profitLoss.toFixed(2)} (${item.profitLossPct.toFixed(2)}%)`,
-                click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
-            });
+            if (item.amount != 0 && item.paid <= 0) {
+                lastMenu.push({
+                    label: `${item.coin}: $${item.price.toFixed(2)} ( * ${item.changePct24Hour.toFixed(2)}% = $${item.change24Hour.toFixed(2)}) * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)} - $${item.paid.toFixed(2)} = $${item.profitLoss.toFixed(2)} (${item.profitLossPct.toFixed(2)}%)`,
+                    click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
+                });
+            }
         }
 
         lastMenu.push({
@@ -122,9 +124,11 @@ const createContextMenu = () => {
 
             for (var x = 0; x < wallet.coins.length; x++) {
                 const walletCoin = wallet.coins[x];
-                lastSubMenu.push({
-                    label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
-                });
+                if (walletCoin.amount) {
+                    lastSubMenu.push({
+                        label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
+                    });
+                }
             }
         }
     }
@@ -192,7 +196,7 @@ const updateUIState = () => {
             };
         });
 
-        coinsBar = coinsBar.slice(0,4);
+        coinsBar = coinsBar.slice(0, 4);
 
         let subTotalBar = {
             span: 2,
