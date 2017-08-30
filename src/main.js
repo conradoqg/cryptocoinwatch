@@ -83,7 +83,7 @@ const createContextMenu = () => {
         lastMenu = last(menuItems).submenu;
         for (var i = 0; i < statistics.coins.length; i++) {
             const item = statistics.coins[i];
-            if (item.amount != 0 && item.paid <= 0) {
+            if (item.amount != 0 && item.paid > 0) {
                 lastMenu.push({
                     label: `${item.coin}: $${item.price.toFixed(2)} ( * ${item.changePct24Hour.toFixed(2)}% = $${item.change24Hour.toFixed(2)}) * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)} - $${item.paid.toFixed(2)} = $${item.profitLoss.toFixed(2)} (${item.profitLossPct.toFixed(2)}%)`,
                     click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
@@ -130,6 +130,21 @@ const createContextMenu = () => {
                     });
                 }
             }
+        }
+
+        menuItems.push({
+            label: 'ICOs',
+            submenu: []
+        });
+
+        lastMenu = last(menuItems).submenu;
+        for (var i = 0; i < statistics.icos.length; i++) {
+            const ico = statistics.icos[i];
+            const value = ico.value ? ico.value : ico.price;
+            lastMenu.push({
+                label: `${ico.token}: ${ico.amount.toFixed(2)} = $${value.toFixed(2)} - $${ico.price.toFixed(2)} = $${(value - ico.price).toFixed(2)} (${(((ico.price - value) * 100) / ico.price).toFixed(2)}%)`,
+                submenu: []
+            });
         }
     }
 
@@ -228,7 +243,7 @@ const updateUIState = () => {
  */
 const updateData = () => {
     console.log('Updating data...');
-    return statisticsCalculator(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('market'))
+    return statisticsCalculator(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('icos'), settingsStore.get('market'))
         .then((newStatistics) => {
             console.log('Data updated.');
             statistics = newStatistics;

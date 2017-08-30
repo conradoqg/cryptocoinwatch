@@ -29,7 +29,7 @@ const copy = (o) => {
  * @param {Array} transfers List of transfers
  * @param {String} market Market name to retrieve information from
  */
-const statisticsCalculator = (transactions, transfers, market) => {
+const statisticsCalculator = (transactions, transfers, icos, market) => {
     const uniqueCoins = {};
     const uniqueWallets = {};
     const defaultCoinValue = {
@@ -97,6 +97,8 @@ const statisticsCalculator = (transactions, transfers, market) => {
             uniqueWallets[walletKey] = wallet;
         }
     }
+
+    if (icos == null) icos = [];
 
     if (Object.keys(uniqueCoins).length > 0) {
         let coinsParam = Object.keys(uniqueCoins).join(',');
@@ -192,7 +194,7 @@ const statisticsCalculator = (transactions, transfers, market) => {
                     paidTotal: paidTotal
                 };
 
-                return { wallets, coins, subTotal, total };
+                return { wallets, coins, icos, subTotal, total };
             });
     }
 };

@@ -45,3 +45,8 @@ transfers:                              # List of transfers
   to: me
   amount: 1
   date: 2017-07-14
+icos:                                   # List of ICOs
+- token: KC                             # Token Symbol (Required)
+  amount: 840                           # Amount (Token) (Required)
+  price: 104.58                         # Price (U$) paid (Required)
+  value: 100.00                         # Current Value (U$)

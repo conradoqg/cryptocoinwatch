@@ -12,13 +12,15 @@
 ## Context-menu
 
 - **Coins**: The current price, 24-hour change and the total value for each coin that you have in your transaction list. How much the coins' value changed and how much did you pay and what's worth now.
-    - `COIN: $<price> (* <24HourChange>% = $<24HourChange>) * <coinAmount> = $<currentValue> - $<amountPaid> = $<profitLoss> (<profitLoss>%)`
+    - `<coin>: $<price> (* <24HourChange>% = $<24HourChange>) * <coinAmount> = $<currentValue> - $<amountPaid> = $<profitLoss> (<profitLoss>%)`
     - `---------------------------------------------`
     - `Change: $<change> (<changePct>%)` 
     - `Profit/Loss: $<currentValue> - $<amountPaid> = $<profit> (<profitLoss>%)`:
 - **Wallets**:
     - `<walletName>`
-        - `COIN: $<price> * <coinAmount> = $<totalValue>`
+        - `<coin>: $<price> * <coinAmount> = $<totalValue>`
+- **ICOs**:
+    - `<token>: $<tokenAmount> = $<amountPaid> * <currentValue> = $<profitLoss> (<profitLoss>%)`
     
 
 _Click open coin's page in cryptocompare._
@@ -75,4 +77,9 @@ transfers:                              # List of transfers
   to: me
   amount: 1
   date: 2017-07-14
+icos:                                   # List of ICOs
+- token: KC                             # Token Symbol (Required)
+  amount: 840                           # Amount (Token) (Required)
+  price: 104.58                         # Price (U$) paid (Required)
+  value: 100.00                         # Current Value (U$)
 ```
