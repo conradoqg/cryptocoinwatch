@@ -32,6 +32,7 @@ const timer = new ManagedTimer();
 // Application state
 const settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.yaml.txt'));
 let statistics = null;
+let lastDataUpdate = null;
 
 app.on('ready', () => {
     if (os.platform() == 'darwin') app.dock.hide();
@@ -73,6 +74,17 @@ const createContextMenu = () => {
     let lastMenu = null;
 
     const last = (array) => array[array.length - 1];
+
+    if (lastDataUpdate) {
+        menuItems.push({
+            label: `Last update: ${lastDataUpdate.toLocaleString()}`,
+            enabled: false
+        });
+
+        menuItems.push({
+            type: 'separator'
+        });
+    }
 
     if (statistics) {
         menuItems.push({
@@ -198,17 +210,22 @@ const updateUIState = () => {
     if (statistics != null) {
         let { coins, subTotal, total } = statistics;
 
-        let coinsBar = coins.map((item) => {
-            const coinColor = Theme.COIN[item.coin] || Theme.COIN.RANDOM;
-            return {
-                value: item.changePct24Hour,
-                max: settingsStore.get('percentageLimit.coin'),
-                min: -settingsStore.get('percentageLimit.coin'),
-                color: {
-                    positive: coinColor,
-                    negative: Theme.colorLuminance(coinColor, -0.5)
-                }
-            };
+        let coinsBar = [];
+        Object.keys(coins).forEach((key) => {
+            const coin = coins[key];
+            const coinColor = Theme.COIN[coin.coin] || Theme.COIN.RANDOM;
+            if (coin.amount != 0 && coin.paid > 0) {
+                coinsBar.push({
+                    value: coin.changePct24Hour,
+                    max: settingsStore.get('percentageLimit.coin'),
+                    min: -settingsStore.get('percentageLimit.coin'),
+                    color: {
+                        positive: coinColor,
+                        negative: Theme.colorLuminance(coinColor, -0.5)
+                    }
+                });
+            }
+            return ;
         });
 
         coinsBar = coinsBar.slice(0, 4);
@@ -245,6 +262,7 @@ const updateData = () => {
     console.log('Updating data...');
     return statisticsCalculator(settingsStore.get('transactions'), settingsStore.get('transfers'), settingsStore.get('icos'), settingsStore.get('market'))
         .then((newStatistics) => {
+            lastDataUpdate = new Date(Date.now());
             console.log('Data updated.');
             statistics = newStatistics;
         });
