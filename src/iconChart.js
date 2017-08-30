@@ -13,7 +13,7 @@ class IconChart {
         this.pImage = PImage.make(16, 16);
         this.context = this.pImage.getContext('2d');
         this.width = 16;
-        this.heigth = 16;
+        this.height = 16;
         this.largeBarWidth = 4;
         this.minBarWidth = 2;
     }
@@ -32,7 +32,7 @@ class IconChart {
         if (barsCount > (this.width / this.minBarWidth)) throw new Error(`Max supported bars count is ${(this.width / this.minBarWidth)}.`);
 
         // Clear bar
-        this.context.clearRect(0, 0, this.width, this.heigth);
+        this.context.clearRect(0, 0, this.width, this.height);
 
         // Generate the bar coordinates
         let barIndex = 0;
@@ -40,14 +40,14 @@ class IconChart {
             const span = (bar.span ? bar.span : 1);
             const width = span * this.minBarWidth;
             const normalizedValue = normalizeValue(bar.value, bar.max || 100, bar.min || 0);
-            const heigth = Math.max(1, Math.round(Math.abs(normalizedValue) * this.heigth));
-            const y = (isPositive(normalizedValue) ? this.heigth - heigth : 0);
+            const height = Math.min(this.height, Math.max(1, Math.round(Math.abs(normalizedValue) * this.height)));
+            const y = (isPositive(normalizedValue) ? this.height - height : 0);
             const color = (isPositive(normalizedValue) ? bar.color.positive : bar.color.negative);
             const coor = {
                 x: barIndex,
                 y: y,
                 width: width,
-                heigth: heigth,
+                height: height,
                 color: color,
             };
             barIndex += width;
@@ -57,7 +57,7 @@ class IconChart {
         // Draw bars
         fillCoors.map((coor) => {
             this.context.fillStyle = coor.color;
-            this.context.fillRect(coor.x, coor.y, coor.width, coor.heigth);
+            this.context.fillRect(coor.x, coor.y, coor.width, coor.height);
         });
 
         return this.getNativeImageFromPureImage(this.pImage);
