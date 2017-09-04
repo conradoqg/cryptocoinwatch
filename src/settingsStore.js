@@ -1,5 +1,5 @@
 const app = require('electron').app;
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const yaml = require('js-yaml');
 const objectPath = require('object-path');
@@ -27,7 +27,10 @@ class SettingsStore extends EventEmitter {
      */
     load() {
         if (this.loadNecessary) {
-            if (!fs.existsSync(this.filePath)) fs.writeFileSync(this.filePath, fs.readFileSync(path.join(app.getAppPath(), 'build/sampleSettings.yaml.txt')));
+            if (!fs.existsSync(this.filePath)) {
+                fs.ensureFileSync(this.filePath);
+                fs.writeFileSync(this.filePath, fs.readFileSync(path.join(app.getAppPath(), 'build/sampleSettings.yaml.txt')));
+            }
             this.data = yaml.safeLoad(fs.readFileSync(this.filePath));
             this.loadNecessary = false;
         }
