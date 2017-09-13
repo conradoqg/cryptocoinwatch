@@ -158,6 +158,7 @@ const statisticsCalculator = (transactions, transfers, icos, market) => {
                 Object.keys(uniqueWallets).forEach((walletKey) => {
                     let uniqueCoins = uniqueWallets[walletKey].uniqueCoins;
                     let coins = [];
+                    let walletValueTotal = 0;
                     Object.keys(uniqueCoins).forEach((coinKey) => {
                         if (json.RAW[coinKey]) {
                             const value = json.RAW[coinKey].USD.PRICE * uniqueCoins[coinKey].amount;
@@ -167,12 +168,14 @@ const statisticsCalculator = (transactions, transfers, icos, market) => {
                                 amount: uniqueCoins[coinKey].amount,
                                 value: value,
                             });
+                            walletValueTotal += value;
                         }
                     });
 
                     wallets.push({
                         wallet: walletKey,
-                        coins: coins
+                        coins: coins,
+                        valueTotal: walletValueTotal
                     });
                 });
 

@@ -127,19 +127,22 @@ const createContextMenu = () => {
         lastMenu = last(menuItems).submenu;
         for (var i = 0; i < statistics.wallets.length; i++) {
             const wallet = statistics.wallets[i];
-            lastMenu.push({
-                label: wallet.wallet,
-                submenu: []
-            });
 
-            let lastSubMenu = last(lastMenu).submenu;
+            if (!(wallet.valueTotal > -0.01 && wallet.valueTotal < 0.01)) {
+                lastMenu.push({
+                    label: wallet.wallet,
+                    submenu: []
+                });
 
-            for (var x = 0; x < wallet.coins.length; x++) {
-                const walletCoin = wallet.coins[x];
-                if (walletCoin.amount) {
-                    lastSubMenu.push({
-                        label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
-                    });
+                let lastSubMenu = last(lastMenu).submenu;
+
+                for (var x = 0; x < wallet.coins.length; x++) {
+                    const walletCoin = wallet.coins[x];
+                    if (!(walletCoin.value > -0.01 && walletCoin.value < 0.01)) {
+                        lastSubMenu.push({
+                            label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
+                        });
+                    }
                 }
             }
         }
@@ -225,7 +228,7 @@ const updateUIState = () => {
                     }
                 });
             }
-            return ;
+            return;
         });
 
         coinsBar = coinsBar.slice(0, 4);
