@@ -41,6 +41,7 @@ percentageLimit:                        # A full bar in the tray icon would refl
   total: 20                             # When the profit/loss percentage reaches that value the bar will be full (Second bar of the right side of the tray icon)
 market: Coinbase                        # Which market should the price based on? (For the full list of available markets, check this link: https://www.cryptocompare.com/api/#introduction)
 website: https://www.cryptocompare.com/ # Which website should be open when you double-click the icon
+showSmallValues: true                   # Show coins and wallets with a balance less/more than +-0.01.
 transactions:                           # List of transactions (Required)
 - coin: BTC                             # Coin Symbol (Must be available in USD) (Required)
   wallet: MyWallet                      # Wallet name (Required)

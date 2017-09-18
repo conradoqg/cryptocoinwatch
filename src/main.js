@@ -74,6 +74,7 @@ app.on('window-all-closed', () => {
 const createContextMenu = () => {
     let menuItems = [];
     let lastMenu = null;
+    let showSmallValues = (typeof(settingsStore.showSmallValues) == 'undefined'? true : settingsStore.showSmallValues);
 
     const last = (array) => array[array.length - 1];
 
@@ -97,7 +98,7 @@ const createContextMenu = () => {
         lastMenu = last(menuItems).submenu;
         for (var i = 0; i < statistics.coins.length; i++) {
             const item = statistics.coins[i];
-            if (item.amount != 0 && item.paid > 0) {
+            if (showSmallValues || (item.amount != 0 && item.paid > 0)) {
                 lastMenu.push({
                     label: `${item.coin}: $${item.price.toFixed(2)} ( * ${item.changePct24Hour.toFixed(2)}% = $${item.change24Hour.toFixed(2)}) * ${item.amount.toFixed(6)} = $${item.value.toFixed(2)} - $${item.paid.toFixed(2)} = $${item.profitLoss.toFixed(2)} (${item.profitLossPct.toFixed(2)}%)`,
                     click: () => shell.openExternal(`https://www.cryptocompare.com/coins/${item.coin.toLowerCase()}/overview/USD`)
@@ -130,7 +131,7 @@ const createContextMenu = () => {
         for (var i = 0; i < statistics.wallets.length; i++) {
             const wallet = statistics.wallets[i];
 
-            if (!(wallet.valueTotal > -0.01 && wallet.valueTotal < 0.01)) {
+            if (showSmallValues || !(wallet.valueTotal > -0.01 && wallet.valueTotal < 0.01)) {
                 lastMenu.push({
                     label: wallet.wallet,
                     submenu: []
@@ -140,7 +141,7 @@ const createContextMenu = () => {
 
                 for (var x = 0; x < wallet.coins.length; x++) {
                     const walletCoin = wallet.coins[x];
-                    if (!(walletCoin.value > -0.01 && walletCoin.value < 0.01)) {
+                    if (showSmallValues || !(walletCoin.value > -0.01 && walletCoin.value < 0.01)) {
                         lastSubMenu.push({
                             label: `${walletCoin.coin}: $${walletCoin.price.toFixed(2)} * ${walletCoin.amount.toFixed(6)} = $${walletCoin.value.toFixed(2)}`,
                         });
@@ -159,8 +160,7 @@ const createContextMenu = () => {
             const ico = statistics.icos[i];
             const value = ico.value ? ico.value : ico.price;
             lastMenu.push({
-                label: `${ico.token}: ${ico.amount.toFixed(2)} = $${value.toFixed(2)} - $${ico.price.toFixed(2)} = $${(value - ico.price).toFixed(2)} (${(((ico.price - value) * 100) / ico.price).toFixed(2)}%)`,
-                submenu: []
+                label: `${ico.token}: ${ico.amount.toFixed(2)} = $${value.toFixed(2)} - $${ico.price.toFixed(2)} = $${(value - ico.price).toFixed(2)} (${(((ico.price - value) * 100) / ico.price).toFixed(2)}%)`
             });
         }
     }
