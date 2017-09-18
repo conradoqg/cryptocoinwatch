@@ -1,17 +1,19 @@
 const path = require('path');
 const os = require('os');
+const fs = require('fs-extra');
 const app = require('electron').app;
 const nativeImage = require('electron').nativeImage;
 const shell = require('electron').shell;
 const Menu = require('electron').Menu;
 const Tray = require('electron').Tray;
+const dialog = require('electron').dialog;
+const AutoLaunch = require('auto-launch');
 const IconChart = require('./iconChart');
 const Theme = require('./theme').default;
-const AutoLaunch = require('auto-launch');
 const SettingsStore = require('./settingsStore');
 const ManagedTimer = require('./managedTimer');
-const env = process.env.ENV || 'production';
 const statisticsCalculator = require('./statisticsCalculator');
+const env = process.env.ENV || 'production';
 
 console.log('Initializing...');
 
@@ -176,6 +178,12 @@ const createContextMenu = () => {
             }
         },
         {
+            label: 'Export',
+            click: () => {
+                return exportData();
+            }
+        },
+        {
             label: 'Settings',
             click: () => shell.openItem(settingsStore.filePath)
         },
@@ -296,4 +304,66 @@ const checkAutoStartup = (shouldStartup) => {
         .catch((err) => {
             console.error(err);
         });
+};
+
+const capitalize = (s) => {
+    return s && s[0].toUpperCase() + s.slice(1);
+};
+
+const exportData = () => {
+    dialog.showSaveDialog(null, {
+        defaultPath: `${app.getName()}_${(new Date()).toLocaleString().replace(/[ \-\/\:,]/g, '_')}`,
+        filters: [
+            { name: 'CSV', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    }, (filepath) => {
+        var stringify = require('csv-stringify');
+        let dataToExport = [];
+        let columns = {};
+
+        columns['type'] = capitalize('type');
+
+        settingsStore.get('transactions').forEach((transaction) => {
+            Object.keys(transaction).forEach(key => columns[key] = capitalize(key));
+            dataToExport.push(Object.assign({
+                type: 'Transaction'
+            }, transaction));
+        });
+
+        settingsStore.get('transfers').forEach((transfer) => {
+            Object.keys(transfer).forEach(key => columns[key] = capitalize(key));
+            dataToExport.push(Object.assign({
+                type: 'Transfer'
+            }, transfer));
+        });
+        settingsStore.get('icos').forEach((ico) => {
+            Object.keys(ico).forEach(key => columns[key] = capitalize(key));
+            dataToExport.push(Object.assign({
+                type: 'ICOs'
+            }, ico));
+        });
+
+        stringify(dataToExport, {
+            header: true,
+            columns: columns,
+            formatters: {
+                date: function (value) {
+                    return value.toISOString().substr(0,10);
+                }
+            }
+        }, function (err, output) {
+            if (err) dialog.showErrorBox('Unable to export data', err);
+            if (filepath) {
+                fs.writeFile(filepath, output, (err) => {
+                    if (err) dialog.showErrorBox('Unable to export data', err.message);
+                    else dialog.showMessageBox(null, {
+                        type: 'info',
+                        title: 'Export data',
+                        message: 'Data exported successfully.'
+                    });
+                });
+            }
+        });
+    });
 };
